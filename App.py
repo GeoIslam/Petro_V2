@@ -1,5 +1,5 @@
 import streamlit as st
-pip install lasio
+lasio
 import lasio
 import pandas as pd
 import numpy as np
