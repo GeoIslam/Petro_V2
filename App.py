@@ -1,4 +1,5 @@
 import streamlit as st
+pip install lasio
 import lasio
 import pandas as pd
 import numpy as np
