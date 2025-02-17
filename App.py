@@ -43,17 +43,30 @@ def load_file():
     if uploaded_files:
         dfs = []
         for uploaded_file in uploaded_files:
-            if uploaded_file.name.endswith(".las"):
-                las = lasio.read(io.BytesIO(uploaded_file.getvalue()))
-                temp_df = las.df()
-                temp_df.reset_index(inplace=True)
-            elif uploaded_file.name.endswith(".csv"):
-                temp_df = pd.read_csv(uploaded_file)
-            # Set Depth column as index
-            if "Depth" in temp_df.columns:
-                temp_df.set_index("Depth", inplace=True)
-            dfs.append(temp_df)
-        st.success(f" {len(uploaded_files)} files loaded successfully!")
+            try:
+                if uploaded_file.name.endswith(".las"):
+                    file_content = uploaded_file.getvalue().decode("utf-8", errors="ignore")  # Decode safely
+                    st.text(file_content[:500])  # Debug: Print first 500 chars
+                    
+                    las = lasio.read(io.StringIO(file_content))  # Read as text
+                    temp_df = las.df()
+                    temp_df.reset_index(inplace=True)
+                elif uploaded_file.name.endswith(".csv"):
+                    temp_df = pd.read_csv(uploaded_file)
+
+                # Set Depth column as index
+                if "Depth" in temp_df.columns:
+                    temp_df.set_index("Depth", inplace=True)
+
+                dfs.append(temp_df)
+                st.success(f"Loaded: {uploaded_file.name}")
+            except Exception as e:
+                st.error(f"Error loading {uploaded_file.name}: {e}")
+
+    else:
+        st.warning("No file uploaded yet!")
+
+        load_file()
         show_input_logs()
         show_well_logs_popup()
 
