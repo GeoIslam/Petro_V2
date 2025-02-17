@@ -324,12 +324,11 @@ def show_predictions():
                 r2 = r2_score(y, y_pred)
                 rmse = mean_squared_error(y, y_pred, squared=False)
                 ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
-
-        ax.legend()
-        ax.set_title("Actual vs Predicted")
-        ax.set_xlabel("Depth")
-        ax.set_ylabel("Values")
-        ax.grid()
+                ax.legend()
+                ax.set_title("Actual vs Predicted")
+                ax.set_xlabel("Depth")
+                ax.set_ylabel("Values")
+                ax.grid()
 
     else:
         st.warning("⚠ Warning, No data or models trained!")
