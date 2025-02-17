@@ -303,7 +303,6 @@ def train_models():
     else:
         st.warning("⚠ No data or logs selected!")
 
-
 # Show predictions
 def show_predictions():
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
@@ -331,7 +330,13 @@ def show_predictions():
         y = y.loc[common_index]
 
         # Standardize the data
-        X_scaled = StandardScaler().fit_transform(X)
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+
+        # Debugging prints
+        st.write("Models available:", list(models.keys()))
+        st.write("X shape:", X.shape, "y shape:", y.shape)
+        st.write("Scaled X shape:", X_scaled.shape)
 
         # Create a Matplotlib figure and axis
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -340,10 +345,20 @@ def show_predictions():
         # Predictions from each trained model
         for model_name, model in models.items():
             if model is not None:
-                y_pred = model.predict(X_scaled)
-                r2 = r2_score(y, y_pred)
-                rmse = mean_squared_error(y, y_pred, squared=False)
-                ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+                try:
+                    y_pred = model.predict(X_scaled)
+
+                    # Ensure prediction shape matches y
+                    if len(y_pred) != len(y):
+                        st.warning(f"Prediction size mismatch for {model_name}. Expected {len(y)}, got {len(y_pred)}.")
+                        continue
+
+                    r2 = r2_score(y, y_pred)
+                    rmse = mean_squared_error(y, y_pred, squared=False)
+                    ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+
+                except Exception as e:
+                    st.error(f"Error predicting with {model_name}: {str(e)}")
 
         ax.legend()
         ax.set_title("Actual vs Predicted")
