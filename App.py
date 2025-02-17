@@ -91,16 +91,21 @@ def select_logs():
     else:
         st.warning("No data loaded!")
 
-# Fix logs by removing null values
+# Fix logs by removing null values and invalid placeholders
 def fix_logs():
     global dfs
     if dfs:
         for df in dfs:
+            # Replace invalid values (-999.25, -999, -9999) with NaN
+            df.replace([-999.25, -999, -9999], np.nan, inplace=True)
+
+            # Remove rows with NaN values
             df.dropna(inplace=True)
-        st.success("Null values removed successfully!")
+
+        st.success("✔ Null values and invalid placeholders removed successfully!")
         show_input_logs()
     else:
-        st.warning("No data loaded!")
+        st.warning("⚠ No data loaded!")
 
 # Plot histograms of input logs and target log
 def plot_histograms():
