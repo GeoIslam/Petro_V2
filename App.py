@@ -122,14 +122,14 @@ def fix_logs():
 
 # Select target and input logs for Training
 def select_training_data():
-    if not dfs:
+    if not cleaned_dfs:
         st.warning("⚠ No data loaded!")
         return
 
     st.write("### Select Training Data")
-    st.session_state["target_log"] = st.selectbox("Select Target Log:", dfs[0].columns)
-    st.session_state["input_logs"] = st.multiselect("Select Input Logs:", dfs[0].columns, 
-                                                     default=[col for col in dfs[0].columns if col != st.session_state["target_log"]])
+    st.session_state["target_log"] = st.selectbox("Select Target Log:", cleaned_dfs[0].columns)
+    st.session_state["input_logs"] = st.multiselect("Select Input Logs:", cleaned_dfs[0].columns, 
+                                                     default=[col for col in cleaned_dfs[0].columns if col != st.session_state["target_log"]])
 
     if st.button("Confirm Selection"):
         if not st.session_state["target_log"] or not st.session_state["input_logs"]:
