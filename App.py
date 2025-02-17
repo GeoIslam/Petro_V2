@@ -306,7 +306,41 @@ def train_models():
 
 # Show predictions
 def show_predictions():
-    # Predictions from each trained model
+    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
+        st.warning("⚠ No cleaned data available!")
+        return
+
+    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
+        st.warning("⚠ No logs selected!")
+        return
+
+    input_logs = st.session_state["input_logs"]
+    target_log = st.session_state["target_log"]
+
+    if st.session_state["cleaned_dfs"] and input_logs and target_log and models:
+        # Combine cleaned data
+        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
+
+        # Align X and y based on input and target logs
+        X = combined_df[input_logs].dropna()
+        y = combined_df[target_log].dropna()
+
+        # Ensure X and y have the same index after dropping NaNs
+        common_index = X.index.intersection(y.index)
+        X = X.loc[common_index]
+        y = y.loc[common_index]
+
+        # Standardize the data
+        X_scaled = StandardScaler().fit_transform(X)
+
+        # Create a subplot grid for each model's predictions
+        num_models = len(models)
+        fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
+
+        if num_models == 1:
+            axes = [axes]  # Ensure axes is iterable if there's only one model
+
+        # Predictions from each trained model
         for i, (model_name, model) in enumerate(models.items()):
             if model is not None:
                 y_pred = model.predict(X_scaled)
