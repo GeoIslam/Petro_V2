@@ -65,9 +65,7 @@ def load_file():
 
     else:
         st.warning("No file uploaded yet!")
-
-        load_file()
-        show_input_logs()
+load_file()
 
 # Show input logs
 def show_input_logs():
