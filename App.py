@@ -305,6 +305,7 @@ def train_models():
 
 
 # Show predictions
+# Show predictions side by side
 def show_predictions():
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
@@ -333,24 +334,31 @@ def show_predictions():
         # Standardize the data
         X_scaled = StandardScaler().fit_transform(X)
 
-        # Plot actual vs predicted values
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(y.index, y.values, label="Actual", color="black")
+        # Create a subplot grid for each model's predictions
+        num_models = len(models)
+        fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
+
+        if num_models == 1:
+            axes = [axes]  # Ensure axes is iterable if there's only one model
 
         # Predictions from each trained model
-        for model_name, model in models.items():
+        for i, (model_name, model) in enumerate(models.items()):
             if model is not None:
                 y_pred = model.predict(X_scaled)
                 r2 = r2_score(y, y_pred)
                 rmse = mean_squared_error(y, y_pred, squared=False)
-                ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
 
-        ax.legend()
-        ax.set_title("Actual vs Predicted")
-        ax.set_xlabel("Depth")
-        ax.set_ylabel("Values")
-        ax.grid()
+                # Plot Actual vs Predicted for each model in separate subplots
+                axes[i].plot(y.index, y.values, label="Actual", color="black")
+                axes[i].plot(y.index, y_pred, label=f"Predicted ({model_name})", color="red")
+                axes[i].set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+                axes[i].set_xlabel("Depth")
+                axes[i].set_ylabel("Values")
+                axes[i].grid()
+                axes[i].legend()
 
+        # Adjust layout for better spacing
+        plt.tight_layout()
         st.pyplot(fig)
     else:
         st.warning("⚠ No data or models trained!")
