@@ -123,18 +123,27 @@ def select_training_data():
 
 # Plot histograms of input logs and target log
 def plot_histograms():
+    global input_logs, target_log, dfs
     if dfs and input_logs and target_log:
         st.write("### Histograms")
+
+        combined_df = pd.concat(dfs, axis=0)  # Combine all data
         fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(15, 6))
+
         for i, col in enumerate(input_logs):
-            axes[i].hist(pd.concat([df[col] for df in dfs]).dropna(), bins=30, edgecolor='black', alpha=0.7)
-            axes[i].set_title(col)
-        axes[-1].hist(pd.concat([df[target_log] for df in dfs]).dropna(), bins=30, edgecolor='black', alpha=0.7, color='red')
-        axes[-1].set_title(target_log)
+            if col in combined_df.columns:
+                axes[i].hist(combined_df[col].dropna(), bins=30, edgecolor='black', alpha=0.7)
+                axes[i].set_title(col)
+
+        # Plot the target log
+        if target_log in combined_df.columns:
+            axes[-1].hist(combined_df[target_log].dropna(), bins=30, edgecolor='black', alpha=0.7, color='red')
+            axes[-1].set_title(target_log)
+
         plt.tight_layout()
         st.pyplot(fig)
     else:
-        st.warning("No data or logs selected!")
+        st.warning("⚠ No data loaded or logs selected!")
 
 # Plot correlation matrix and update X data
 def plot_correlation_matrix():
