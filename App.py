@@ -371,9 +371,8 @@ def show_predictions():
                 with open(f"{model_to_save}.pkl", "wb") as file:
                     pickle.dump(model, file)
                 st.success(f"{model_to_save} saved successfully!")
-
-    else:
-        st.warning("⚠ No data or models trained!")
+            else:
+                st.warning("⚠ No data or models trained!")
         
 # Load and predict new data
 def load_and_predict_new_data():
