@@ -39,22 +39,26 @@ updated_X = None
 def load_file():
     global dfs
     uploaded_files = st.file_uploader("Upload LAS or CSV files", type=["las", "csv"], accept_multiple_files=True)
-    if uploaded_files:
-        dfs = []
-        for uploaded_file in uploaded_files:
-            try:
-                if uploaded_file.name.endswith(".las"):
-                    las = lasio.read(uploaded_file)
-                    temp_df = las.df().reset_index()
-                elif uploaded_file.name.endswith(".csv"):
-                    temp_df = pd.read_csv(uploaded_file)
-
-                dfs.append(temp_df)
-                st.success(f"✅ Loaded: {uploaded_file.name}")
-            except Exception as e:
-                st.error(f"⚠ Error loading {uploaded_file.name}: {e}")
-    else:
+    
+    if not uploaded_files:
         st.warning("No file uploaded yet!")
+        return
+
+    dfs = []
+    for uploaded_file in uploaded_files:
+        try:
+            if uploaded_file.name.endswith(".las"):
+                las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
+                temp_df = las.df().reset_index()
+            elif uploaded_file.name.endswith(".csv"):
+                temp_df = pd.read_csv(uploaded_file)
+
+            dfs.append(temp_df)
+            st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
+
+        except Exception as e:
+            st.error(f"Error loading {uploaded_file.name}: {e}")
+
 load_file()
 
 # Show input logs
@@ -77,25 +81,45 @@ def show_input_logs():
 # Fix missing values
 def fix_logs():
     global dfs
-    if dfs:
-        for df in dfs:
-            df.replace([-999.25, -999, -9999], np.nan, inplace=True)
-            df.dropna(inplace=True)
-        st.success("✔ Null values removed successfully!")
-    else:
+    if not dfs:
         st.warning("⚠ No data loaded!")
+        return
+
+    missing_values = st.text_input("Enter missing values to replace (comma separated, e.g., -999.25, -999)", "-999.25,-999,-9999")
+    missing_values = [float(val.strip()) for val in missing_values.split(",")]
+
+    for df in dfs:
+        df.replace(missing_values, np.nan, inplace=True)
+        fill_method = st.selectbox("Choose method to fill missing values", ["Drop Rows", "Fill with Mean", "Fill with Median", "Interpolate"])
+        
+        if fill_method == "Drop Rows":
+            df.dropna(inplace=True)
+        elif fill_method == "Fill with Mean":
+            df.fillna(df.mean(), inplace=True)
+        elif fill_method == "Fill with Median":
+            df.fillna(df.median(), inplace=True)
+        elif fill_method == "Interpolate":
+            df.interpolate(inplace=True)
+
+    st.success("✔ Data cleaned successfully!")
+    show_input_logs()
 
 # Select target and input logs for Training
-def Select_Training_Data():
+def select_training_data():
     global target_log, input_logs
-    if dfs:
-        st.write("Select Training Data")
-        target_log = st.selectbox("Select Target Log (Y):", dfs[0].columns)
-        input_logs = st.multiselect("Select Input Logs (X):", dfs[0].columns)
-        if st.button("Confirm Selection"):
-            st.success("Logs selected successfully!")
-    else:
-        st.warning("No data loaded!")
+    if not dfs:
+        st.warning("⚠ No data loaded!")
+        return
+
+    st.write("### Select Training Data")
+    target_log = st.multiselect("Select Target Log(s):", dfs[0].columns)  # السماح باختيار أكثر من هدف
+    input_logs = st.multiselect("Select Input Logs:", dfs[0].columns, default=[col for col in dfs[0].columns if col not in target_log])
+
+    if st.button("Confirm Selection"):
+        if not target_log or not input_logs:
+            st.warning("⚠ Please select both input and target logs!")
+        else:
+            st.success(f"✔ Logs selected successfully!\nTarget: {target_log}\nInputs: {input_logs}")
 
 # Plot histograms of input logs and target log
 def plot_histograms():
