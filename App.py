@@ -354,15 +354,6 @@ def show_predictions():
             with open(f"{model_to_save}.pkl", "wb") as file:
                 joblib.dump(model, file)
             st.success(f"{model_to_save} saved successfully!")
-        # Allow the user to save a selected model
-        model_to_save = st.selectbox("Select model to save", list(models.keys()))
-        if model_to_save:
-            save_button = st.button(f"Save {model_to_save}")
-            if save_button:
-                model = models[model_to_save]
-                with open(f"{model_to_save}.pkl", "wb") as file:
-                    pickle.dump(model, file)
-                st.success(f"{model_to_save} saved successfully!")
         else:
             st.warning("⚠ No data or models trained!")
                 
