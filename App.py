@@ -306,16 +306,38 @@ def train_models():
 
 # Show predictions
 def show_predictions():
-    if dfs and target_log and input_logs:
-        combined_df = pd.concat(dfs, axis=0)
+    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
+        st.warning("⚠ No cleaned data available!")
+        return
+
+    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
+        st.warning("⚠ No logs selected!")
+        return
+
+    input_logs = st.session_state["input_logs"]
+    target_log = st.session_state["target_log"]
+
+    if st.session_state["cleaned_dfs"] and input_logs and target_log and models:
+        # Combine cleaned data
+        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
+
+        # Align X and y based on input and target logs
         X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
         y = combined_df[target_log].dropna()
+
+        # Ensure X and y have the same index after dropping NaNs
+        common_index = X.index.intersection(y.index)
+        X = X.loc[common_index]
+        y = y.loc[common_index]
+
+        # Standardize the data
         X_scaled = StandardScaler().fit_transform(X)
 
+        # Plot actual vs predicted values
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.plot(y.index, y.values, label="Actual", color="black")
 
-        # Predictions
+        # Predictions from each trained model
         for model_name, model in models.items():
             if model is not None:
                 y_pred = model.predict(X_scaled)
@@ -331,7 +353,7 @@ def show_predictions():
 
         st.pyplot(fig)
     else:
-        st.warning("No data or models trained!")
+        st.warning("⚠ No data or models trained!")
 
 # Load and predict new data
 def load_and_predict_new_data():
