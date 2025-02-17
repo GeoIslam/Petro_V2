@@ -124,7 +124,7 @@ def select_training_data():
 # Plot histograms of input logs and target log
 def plot_histograms():
     if dfs and input_logs and target_log:
-        st.write("Histograms")
+        st.write("### Histograms")
         fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(15, 6))
         for i, col in enumerate(input_logs):
             axes[i].hist(pd.concat([df[col] for df in dfs]).dropna(), bins=30, edgecolor='black', alpha=0.7)
