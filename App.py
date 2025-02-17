@@ -261,6 +261,7 @@ def train_models():
             gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
             model = SVR(kernel=kernel, C=C, gamma=gamma)
         elif model_name == "Gaussian Process":
+            # Define the kernel using RBF and Constant Kernel
             kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
             model = GaussianProcessRegressor(kernel=kernel, random_state=42)
         elif model_name == "KNN":
