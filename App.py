@@ -46,7 +46,7 @@ def load_file():
             try:
                 if uploaded_file.name.endswith(".las"):
                     file_content = uploaded_file.getvalue().decode("utf-8", errors="ignore")  # Decode safely
-                    st.text(file_content[:500])  # Debug: Print first 500 chars
+                    st.text(file_content[:1000])  # Debug: Print first 1000 chars
                     
                     las = lasio.read(io.StringIO(file_content))  # Read as text
                     temp_df = las.df()
