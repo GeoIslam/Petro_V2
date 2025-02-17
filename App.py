@@ -227,9 +227,8 @@ def plot_correlation_matrix():
     else:
         st.warning("⚠ No logs selected!")
 
-# Train models with hyperparameter selection
+# Function to train the selected models
 def train_models():
-    global models
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
@@ -242,70 +241,51 @@ def train_models():
     target_log = st.session_state["target_log"]
 
     if st.session_state["cleaned_dfs"] and input_logs and target_log:
-        model_name = st.selectbox("Choose Model", list(models.keys()))
+        # Combine cleaned data
+        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
 
-        # Model selection and hyperparameter tuning
-        if model_name == "Linear Regression":
-            model = LinearRegression()
-        elif model_name == "Random Forest":
-            n_estimators = st.slider("Number of Trees", 10, 200, 100)
-            max_depth = st.slider("Max Depth", 1, 20, 10)
-            model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
-        elif model_name == "Neural Network":
-            hidden_layer_sizes = st.text_input("Hidden Layer Sizes (e.g., 64,64)", "64,64")
-            max_iter = st.slider("Max Iterations", 100, 1000, 100)
-            model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
-        elif model_name == "SVR":
-            kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
-            C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
-            gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
-            model = SVR(kernel=kernel, C=C, gamma=gamma)
-        elif model_name == "Gaussian Process":
-            # Define the kernel using RBF and Constant Kernel
-            kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
-            model = GaussianProcessRegressor(kernel=kernel, random_state=42)
-        elif model_name == "KNN":
-            n_neighbors = st.slider("Number of Neighbors", 1, 20, 5)
-            model = KNeighborsRegressor(n_neighbors=n_neighbors)
+        # Prepare X and y
+        X = combined_df[input_logs]
+        y = combined_df[target_log]
 
-        if st.button("Train Model"):
-            # Use cleaned data and updated_X for training
-            combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-            X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
-            y = combined_df[target_log].dropna()
+        # Split data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-            # Train-test split
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Standardize the data
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
 
-            # Standardize data
-            scaler = StandardScaler()
-            X_train = scaler.fit_transform(X_train)
-            X_test = scaler.transform(X_test)
+        # Model selection
+        model_names = st.multiselect("Select Models to Train", 
+                                     ["Linear Regression", "Random Forest", "Neural Network", "SVR", "Gaussian Process"])
+
+        for name in model_names:
+            if name == "Linear Regression":
+                model = LinearRegression()
+            elif name == "Random Forest":
+                n_estimators = st.slider("Number of Trees", 10, 200, 100)
+                max_depth = st.slider("Max Depth", 1, 20, 10)
+                model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+            elif name == "Neural Network":
+                hidden_layer_sizes = st.text_input("Hidden Layer Sizes (e.g., 64,64)", "64,64")
+                max_iter = st.slider("Max Iterations", 100, 1000, 100)
+                model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
+            elif name == "SVR":
+                kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
+                C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
+                gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
+                model = SVR(kernel=kernel, C=C, gamma=gamma)
+            elif name == "Gaussian Process":
+                model = GaussianProcessRegressor(random_state=42)
 
             # Train the model
-            model.fit(X_train, y_train)
-            models[model_name] = model
+            model.fit(X_train_scaled, y_train)
+            models[name] = model
 
-            # Visualize model structure
-            if model_name == "Random Forest":
-                fig, ax = plt.subplots(figsize=(10, 6))
-                plot_tree(model.estimators_[0], filled=True, ax=ax, feature_names=X.columns, max_depth=3)
-                plt.title("Random Forest Tree")
-                st.pyplot(fig)
-            elif model_name == "Neural Network":
-                fig, ax = plt.subplots(figsize=(10, 6))
-                ax.text(0.5, 0.5, f"NN Architecture: {hidden_layer_sizes}", fontsize=12, ha="center")
-                ax.axis("off")
-                plt.title("Neural Network Architecture")
-                st.pyplot(fig)
+            st.success(f"{name} trained successfully!")
 
-            st.success(f"{model_name} trained successfully!")
-    else:
-        st.warning("⚠ No data or logs selected!")
-
-
-# Show predictions
-# Show predictions side by side
+# Function to show predictions
 def show_predictions():
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
@@ -323,13 +303,8 @@ def show_predictions():
         combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
 
         # Align X and y based on input and target logs
-        X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
+        X = combined_df[input_logs].dropna()
         y = combined_df[target_log].dropna()
-
-        # Ensure X and y have the same index after dropping NaNs
-        common_index = X.index.intersection(y.index)
-        X = X.loc[common_index]
-        y = y.loc[common_index]
 
         # Standardize the data
         X_scaled = StandardScaler().fit_transform(X)
@@ -360,9 +335,20 @@ def show_predictions():
         # Adjust layout for better spacing
         plt.tight_layout()
         st.pyplot(fig)
+
+        # Allow the user to save a selected model
+        model_to_save = st.selectbox("Select model to save", list(models.keys()))
+        if model_to_save:
+            save_button = st.button(f"Save {model_to_save}")
+            if save_button:
+                model = models[model_to_save]
+                with open(f"{model_to_save}.pkl", "wb") as file:
+                    pickle.dump(model, file)
+                st.success(f"{model_to_save} saved successfully!")
+
     else:
         st.warning("⚠ No data or models trained!")
-
+        
 # Load and predict new data
 def load_and_predict_new_data():
     uploaded_file = st.file_uploader("Upload new LAS or CSV file", type=["las", "csv"])
