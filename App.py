@@ -305,60 +305,25 @@ def train_models():
 
 # Show predictions
 def show_predictions():
-    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
-        st.warning("⚠ No cleaned data available!")
-        return
-
-    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
-        st.warning("⚠ No logs selected!")
-        return
-
-    input_logs = st.session_state["input_logs"]
-    target_log = st.session_state["target_log"]
-
-    if st.session_state["cleaned_dfs"] and input_logs and target_log and models:
-        # Combine cleaned data
-        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-
-        # Align X and y based on input and target logs
-        X = combined_df[input_logs].dropna()
+    if dfs and target_log and input_logs:
+        
+        # Prepare data
+        combined_df = pd.concat(cleaned_dfs, axis=0)
+        X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
         y = combined_df[target_log].dropna()
+        X_scaled = StandardScaler().fit_transform(X)
 
-        # Ensure X and y have the same index after dropping NaNs
-        common_index = X.index.intersection(y.index)
-        X = X.loc[common_index]
-        y = y.loc[common_index]
-
-        # Standardize the data
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-
-        # Debugging prints
-        st.write("Models available:", list(models.keys()))
-        st.write("X shape:", X.shape, "y shape:", y.shape)
-        st.write("Scaled X shape:", X_scaled.shape)
-
-        # Create a Matplotlib figure and axis
+        # Create a Matplotlib figure
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.plot(y.index, y.values, label="Actual", color="black")
 
-        # Predictions from each trained model
+        # Predictions
         for model_name, model in models.items():
             if model is not None:
-                try:
-                    y_pred = model.predict(X_scaled)
-
-                    # Ensure prediction shape matches y
-                    if len(y_pred) != len(y):
-                        st.warning(f"Prediction size mismatch for {model_name}. Expected {len(y)}, got {len(y_pred)}.")
-                        continue
-
-                    r2 = r2_score(y, y_pred)
-                    rmse = mean_squared_error(y, y_pred, squared=False)
-                    ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
-
-                except Exception as e:
-                    st.error(f"Error predicting with {model_name}: {str(e)}")
+                y_pred = model.predict(X_scaled)
+                r2 = r2_score(y, y_pred)
+                rmse = mean_squared_error(y, y_pred, squared=False)
+                ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
 
         ax.legend()
         ax.set_title("Actual vs Predicted")
@@ -366,12 +331,21 @@ def show_predictions():
         ax.set_ylabel("Values")
         ax.grid()
 
-        # Show the plot in Streamlit
-        st.pyplot(fig)
     else:
-        st.warning("⚠ No data or models trained!")
+        messagebox.showwarning("Warning", "No data or models trained!"
 
-        
+# Allow the user to save a selected model
+    model_to_save = st.selectbox("Select model to save", list(models.keys()))
+        if model_to_save:
+            save_button = st.button(f"Save {model_to_save}")
+            if save_button:
+                model = models[model_to_save]
+                with open(f"{model_to_save}.pkl", "wb") as file:
+                    pickle.dump(model, file)
+                st.success(f"{model_to_save} saved successfully!")
+        else:
+            st.warning("⚠ No data or models trained!")
+                
 # Load and predict new data
 def load_and_predict_new_data():
     uploaded_file = st.file_uploader("Upload new LAS or CSV file", type=["las", "csv"])
