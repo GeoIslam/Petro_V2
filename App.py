@@ -95,11 +95,11 @@ def fix_logs():
     else:
         st.warning("⚠ No data loaded!")
 
-# Select target and input logs
-def select_logs():
+# Select target and input logs for Training
+def select_Training_Data():
     global target_log, input_logs
     if dfs:
-        st.write("Select Logs")
+        st.write("Select Training Data")
         target_log = st.selectbox("Select Target Log (Y):", dfs[0].columns)
         input_logs = st.multiselect("Select Input Logs (X):", dfs[0].columns)
         if st.button("Confirm Selection"):
@@ -320,7 +320,7 @@ def load_and_predict_new_data():
 def main():
     st.title("Petrophysical Property Predictor")
 
-    menu = ["Load File", "Show Input Logs", "Select Logs", "Fix Logs", "Plot Histograms", "Plot Correlation Matrix", "Train Models", "Show Predictions", "Load & Predict New Data"]
+    menu = ["Load File", "Show Input Logs", "Fix Logs", "Select Training Data", "Plot Histograms", "Plot Correlation Matrix", "Train Models", "Show Predictions", "Load & Predict New Data"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Load File":
@@ -330,7 +330,7 @@ def main():
      elif choice == "Fix Logs":
         fix_logs()   
     elif choice == "Select Logs":
-        select_logs()
+        select_Training_Data()
     elif choice == "Plot Histograms":
         plot_histograms()
     elif choice == "Plot Correlation Matrix":
