@@ -117,36 +117,8 @@ def fix_logs():
         # Store cleaned data in session state
         st.session_state["cleaned_dfs"] = cleaned_dfs
         st.success("✔ Cleaned logs saved to session state!")
-
-    # Export button to allow the user to export cleaned logs
-    if st.button("Export Cleaned Logs"):
-        if "cleaned_dfs" not in st.session_state:
-            st.warning("⚠ No cleaned logs available for export!")
-            return
-        
-        # Ask for the file format
-        file_format = st.selectbox("Select File Format", ["CSV", "LAS"])
-
-        # Provide input for file path
-        file_path = st.text_input("Enter the file path to save the cleaned logs (e.g., cleaned_logs.csv)")
-
-        if file_path and file_format:
-            if file_format == "CSV":
-                # Save as CSV
-                cleaned_combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-                cleaned_combined_df.to_csv(file_path, index=False)
-                st.success(f"✔ Cleaned logs exported as CSV: {file_path}")
-            elif file_format == "LAS":
-                # Save as LAS
-                import lasio
-                las = lasio.LASFile()
-                # Assuming the cleaned dataframe has the correct structure for LAS format
-                cleaned_combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-                las.set_data_from_df(cleaned_combined_df)
-                las.write(file_path)
-                st.success(f"✔ Cleaned logs exported as LAS: {file_path}")
-        else:
-            st.warning("⚠ Please provide a valid file path and select a file format!")
+    else:
+        st.warning("⚠ Cleaned logs not saved!")
 
 # Select target and input logs for Training
 def select_training_data():
