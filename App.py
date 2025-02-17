@@ -334,8 +334,8 @@ def show_predictions():
     else:
         st.warning("⚠ Warning, No data or models trained!")
 
-# Allow the user to save a selected model
-    model_to_save = st.selectbox("Select model to save", list(models.keys()))
+        # Allow the user to save a selected model
+        model_to_save = st.selectbox("Select model to save", list(models.keys()))
         if model_to_save:
             save_button = st.button(f"Save {model_to_save}")
             if save_button:
