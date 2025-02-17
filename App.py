@@ -55,7 +55,7 @@ def load_file():
                 st.error(f"⚠ Error loading {uploaded_file.name}: {e}")
     else:
         st.warning("No file uploaded yet!")
-
+load_file()
 # Show input logs
 def show_input_logs():
     if dfs:
