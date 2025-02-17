@@ -122,10 +122,6 @@ def select_training_data():
         else:
             st.success(f"✔ Logs selected successfully!\nTarget: {target_log}\nInputs: {input_logs}")
 
-# store and retrieve values
-    input_logs = st.session_state["input_logs"]
-    target_log = st.session_state["target_log"]
-
 # Plot histograms of input logs and target log
 def plot_histograms():
     global input_logs, target_log, dfs
