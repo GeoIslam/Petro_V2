@@ -20,7 +20,7 @@ import joblib
 # Streamlit page configuration
 st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
 
-st.title("📊 Petrophysical Property Predictor")
+st.title("📊 Petrophysics Expert Robot")
 
 # Global variables
 dfs = []  # List to store dataframes for each well
@@ -68,22 +68,6 @@ def load_file():
 
         load_file()
         show_input_logs()
-        show_well_logs_popup()
-
-# Show log data of each well in a popup window
-def show_well_logs_popup():
-    if dfs:
-        for i, df in enumerate(dfs):
-            st.write(f"Well {i+1} Log Data")
-            fig, axes = plt.subplots(nrows=1, ncols=len(df.columns), figsize=(15, 6))
-            for j, col in enumerate(df.columns):
-                axes[j].plot(df[col], df.index, label=col)
-                axes[j].set_ylim(df.index.max(), df.index.min())  # Invert depth axis
-                axes[j].set_xlabel(col)
-                axes[j].set_ylabel("Depth")
-                axes[j].grid()
-            plt.tight_layout()
-            st.pyplot(fig)
 
 # Show input logs
 def show_input_logs():
