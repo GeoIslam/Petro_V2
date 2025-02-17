@@ -112,7 +112,7 @@ def select_training_data():
         return
 
     st.write("### Select Training Data")
-    target_log = st.multiselect("Select Target Log(s):", dfs[0].columns)  # السماح باختيار أكثر من هدف
+    target_log = st.multiselect("Select Target Log(s):", dfs[0].columns)  
     input_logs = st.multiselect("Select Input Logs:", dfs[0].columns, default=[col for col in dfs[0].columns if col not in target_log])
 
     if st.button("Confirm Selection"):
@@ -344,7 +344,7 @@ def main():
     elif choice == "Fix Logs":
         fix_logs()   
     elif choice == "Select Training Data":
-        Select_Training_Data()
+        select_training_data()
     elif choice == "Plot Histograms":
         plot_histograms()
     elif choice == "Plot Correlation Matrix":
