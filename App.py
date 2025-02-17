@@ -124,7 +124,13 @@ def select_training_data():
 
 # Plot histograms of input logs and target log
 def plot_histograms():
-    global input_logs, target_log, dfs
+    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
+        st.warning("⚠ No training data selected!")
+        return
+    
+    input_logs = st.session_state["input_logs"]
+    target_log = st.session_state["target_log"]
+
     if dfs and input_logs and target_log:
         st.write("### Histograms")
 
