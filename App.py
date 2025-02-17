@@ -159,7 +159,7 @@ def plot_histograms():
         
         # Use the first cleaned dataframe 
         combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)  # Combine all cleaned data
-        fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(20, 6))
+        fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(25, 6))
 
         for i, col in enumerate(input_logs):
             if col in combined_df.columns:
