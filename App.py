@@ -79,18 +79,6 @@ def show_input_logs():
     else:
         st.warning("No data loaded!")
 
-# Select target and input logs
-def select_logs():
-    global target_log, input_logs
-    if dfs:
-        st.write("Select Logs")
-        target_log = st.selectbox("Select Target Log (Y):", dfs[0].columns)
-        input_logs = st.multiselect("Select Input Logs (X):", dfs[0].columns)
-        if st.button("Confirm Selection"):
-            st.success("Logs selected successfully!")
-    else:
-        st.warning("No data loaded!")
-
 # Fix logs by removing null values and invalid placeholders
 def fix_logs():
     global dfs
@@ -106,6 +94,18 @@ def fix_logs():
         show_input_logs()
     else:
         st.warning("⚠ No data loaded!")
+
+# Select target and input logs
+def select_logs():
+    global target_log, input_logs
+    if dfs:
+        st.write("Select Logs")
+        target_log = st.selectbox("Select Target Log (Y):", dfs[0].columns)
+        input_logs = st.multiselect("Select Input Logs (X):", dfs[0].columns)
+        if st.button("Confirm Selection"):
+            st.success("Logs selected successfully!")
+    else:
+        st.warning("No data loaded!")
 
 # Plot histograms of input logs and target log
 def plot_histograms():
