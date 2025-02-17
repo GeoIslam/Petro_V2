@@ -96,7 +96,7 @@ def fix_logs():
         st.warning("⚠ No data loaded!")
 
 # Select target and input logs for Training
-def select_Training_Data():
+def Select_Training_Data():
     global target_log, input_logs
     if dfs:
         st.write("Select Training Data")
@@ -329,8 +329,8 @@ def main():
         show_input_logs()
     elif choice == "Fix Logs":
         fix_logs()   
-    elif choice == "Select Logs":
-        select_Training_Data()
+    elif choice == "Select Training Data":
+        Select_Training_Data()
     elif choice == "Plot Histograms":
         plot_histograms()
     elif choice == "Plot Correlation Matrix":
