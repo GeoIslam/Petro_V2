@@ -56,6 +56,7 @@ def load_file():
     else:
         st.warning("No file uploaded yet!")
 load_file()
+
 # Show input logs
 def show_input_logs():
     if dfs:
@@ -73,19 +74,14 @@ def show_input_logs():
     else:
         st.warning("No data loaded!")
 
-# Fix logs by removing null values and invalid placeholders
+# Fix missing values
 def fix_logs():
     global dfs
     if dfs:
         for df in dfs:
-            # Replace invalid values (-999.25, -999, -9999) with NaN
             df.replace([-999.25, -999, -9999], np.nan, inplace=True)
-
-            # Remove rows with NaN values
             df.dropna(inplace=True)
-
-        st.success("✔ Null values and invalid placeholders removed successfully!")
-        show_input_logs()
+        st.success("✔ Null values removed successfully!")
     else:
         st.warning("⚠ No data loaded!")
 
