@@ -157,7 +157,7 @@ def plot_histograms():
     if input_logs and target_log:
         st.write("### Histograms")
         
-        # Use the first cleaned dataframe (you can adjust this logic if needed)
+        # Use the first cleaned dataframe 
         combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)  # Combine all cleaned data
         fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(15, 6))
 
@@ -180,9 +180,23 @@ def plot_histograms():
 # Plot correlation matrix and update X data
 def plot_correlation_matrix():
     global updated_X
-    if dfs and input_logs:
-        st.write("Correlation Matrix")
-        combined_df = pd.concat(dfs, axis=0)
+    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
+        st.warning("⚠ No cleaned data available!")
+        return
+
+    if "input_logs" not in st.session_state or not st.session_state["input_logs"]:
+        st.warning("⚠ No logs selected!")
+        return
+
+    input_logs = st.session_state["input_logs"]
+    
+    # Use cleaned data
+    combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
+    
+    if input_logs:
+        st.write("### Correlation Matrix")
+
+        # Calculate the correlation matrix
         corr_matrix = combined_df[input_logs].corr()
 
         # Drop highly correlated features
@@ -191,6 +205,7 @@ def plot_correlation_matrix():
             for j in range(i):
                 if abs(corr_matrix.iloc[i, j]) > 0.8:
                     high_corr.add(corr_matrix.columns[i])
+
         updated_X = combined_df[input_logs].drop(columns=high_corr)
 
         # Plot updated X data as logs
@@ -210,7 +225,7 @@ def plot_correlation_matrix():
         ax_corr.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
     else:
-        st.warning("No data or logs selected!")
+        st.warning("⚠ No logs selected!")
 
 # Train models with hyperparameter selection
 def train_models():
