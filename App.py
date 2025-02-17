@@ -35,7 +35,7 @@ models = {
 }
 updated_X = None
 
-# Load LAS or CSV file
+# Load LAS or CSV files
 def load_file():
     global dfs
     uploaded_files = st.file_uploader("Upload LAS or CSV files", type=["las", "csv"], accept_multiple_files=True)
@@ -44,23 +44,17 @@ def load_file():
         for uploaded_file in uploaded_files:
             try:
                 if uploaded_file.name.endswith(".las"):
-                    file_content = uploaded_file.getvalue().decode("utf-8", errors="ignore")  # Decode safely
-                    st.text(file_content[:2000])  # Debug: Print first 2000 chars
-                    
-                    las = lasio.read(io.StringIO(file_content))  # Read as text
-                    temp_df = las.df()
-                    temp_df.reset_index(inplace=True)
+                    las = lasio.read(uploaded_file)
+                    temp_df = las.df().reset_index()
                 elif uploaded_file.name.endswith(".csv"):
                     temp_df = pd.read_csv(uploaded_file)
 
                 dfs.append(temp_df)
-                st.success(f"Loaded: {uploaded_file.name}")
+                st.success(f"✅ Loaded: {uploaded_file.name}")
             except Exception as e:
-                st.error(f"Error loading {uploaded_file.name}: {e}")
-
+                st.error(f"⚠ Error loading {uploaded_file.name}: {e}")
     else:
         st.warning("No file uploaded yet!")
-load_file()
 
 # Show input logs
 def show_input_logs():
