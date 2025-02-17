@@ -327,7 +327,7 @@ def main():
         load_file()
     elif choice == "Show Input Logs":
         show_input_logs()
-     elif choice == "Fix Logs":
+    elif choice == "Fix Logs":
         fix_logs()   
     elif choice == "Select Logs":
         select_Training_Data()
