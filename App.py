@@ -324,6 +324,12 @@ def show_predictions():
         X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
         y = combined_df[target_log].dropna()
 
+        # Ensure models Exists Before Using It: 
+        if "models" not in st.session_state or not st.session_state["models"]:
+            st.warning("⚠ No trained models found!")
+            return
+        models = st.session_state["models"]
+
         # Ensure X and y have the same index after dropping NaNs
         common_index = X.index.intersection(y.index)
         X = X.loc[common_index]
