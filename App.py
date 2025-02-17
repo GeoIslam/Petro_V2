@@ -332,7 +332,7 @@ def show_predictions():
         ax.grid()
 
     else:
-        messagebox.showwarning("Warning", "No data or models trained!"
+        st.warning("⚠ Warning, No data or models trained!")
 
 # Allow the user to save a selected model
     model_to_save = st.selectbox("Select model to save", list(models.keys()))
