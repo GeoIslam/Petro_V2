@@ -89,6 +89,8 @@ def fix_logs():
     missing_values = st.text_input("Enter missing values to replace (comma separated, e.g., -999.25, -999)", "-999.25,-999,-9999")
     missing_values = [float(val.strip()) for val in missing_values.split(",")]
 
+    cleaned_dfs = []  # To store cleaned dataframes
+
     for df in dfs:
         df.replace(missing_values, np.nan, inplace=True)
         fill_method = st.selectbox("Choose method to fill missing values", ["Drop Rows", "Fill with Mean", "Fill with Median", "Interpolate"])
@@ -101,6 +103,11 @@ def fix_logs():
             df.fillna(df.median(), inplace=True)
         elif fill_method == "Interpolate":
             df.interpolate(inplace=True)
+
+        cleaned_dfs.append(df)  # Store the cleaned dataframe
+
+    # Store cleaned data in session state for future use
+    st.session_state["cleaned_dfs"] = cleaned_dfs
 
     st.success("✔ Data cleaned successfully!")
     show_input_logs()
