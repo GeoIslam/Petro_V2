@@ -305,7 +305,7 @@ def train_models():
 
 # Show predictions
 def show_predictions():
-    if dfs and target_log and input_logs:
+    if cleaned_dfs and target_log and input_logs:
         
         # Prepare data
         combined_df = pd.concat(cleaned_dfs, axis=0)
