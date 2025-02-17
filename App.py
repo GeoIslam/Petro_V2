@@ -305,57 +305,61 @@ def train_models():
 
 # Show predictions
 def show_predictions():
-    # Check if cleaned data, target log, and input logs are available
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
 
-    if "target_log" not in st.session_state or "input_logs" not in st.session_state:
+    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
         st.warning("⚠ No logs selected!")
         return
 
-    # Access cleaned data, target log, and input logs from session state
-    cleaned_dfs = st.session_state["cleaned_dfs"]
-    target_log = st.session_state["target_log"]
     input_logs = st.session_state["input_logs"]
+    target_log = st.session_state["target_log"]
 
-    # Prepare data
-    combined_df = pd.concat(cleaned_dfs, axis=0)
-    X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
-    y = combined_df[target_log].dropna()
-    X_scaled = StandardScaler().fit_transform(X)
+    if st.session_state["cleaned_dfs"] and input_logs and target_log and models:
+        # Combine cleaned data
+        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
 
-    # Create a Matplotlib figure
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(y.index, y.values, label="Actual", color="black")
+        # Align X and y based on input and target logs
+        X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
+        y = combined_df[target_log].dropna()
 
-    # Predictions
-    for model_name, model in models.items():
-        if model is not None:
-            y_pred = model.predict(X_scaled)
-            r2 = r2_score(y, y_pred)
-            rmse = mean_squared_error(y, y_pred, squared=False)
-            ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
-            ax.legend()
-            ax.set_title("Actual vs Predicted")
-            ax.set_xlabel("Depth")
-            ax.set_ylabel("Values")
-            ax.grid()
+        # Ensure X and y have the same index after dropping NaNs
+        common_index = X.index.intersection(y.index)
+        X = X.loc[common_index]
+        y = y.loc[common_index]
 
-    # Display the plot
-    st.pyplot(fig)
+        # Standardize the data
+        X_scaled = StandardScaler().fit_transform(X)
 
-    # Allow the user to save a selected model
-    model_to_save = st.selectbox("Select model to save", list(models.keys()))
-    if model_to_save:
-        save_button = st.button(f"Save {model_to_save}")
-        if save_button:
-            model = models[model_to_save]
-            with open(f"{model_to_save}.pkl", "wb") as file:
-                joblib.dump(model, file)
-            st.success(f"{model_to_save} saved successfully!")
-        else:
-            st.warning("⚠ No data or models trained!")
+        # Create a subplot grid for each model's predictions
+        num_models = len(models)
+        fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
+
+        if num_models == 1:
+            axes = [axes]  # Ensure axes is iterable if there's only one model
+
+        # Predictions from each trained model
+        for i, (model_name, model) in enumerate(models.items()):
+            if model is not None:
+                y_pred = model.predict(X_scaled)
+                r2 = r2_score(y, y_pred)
+                rmse = mean_squared_error(y, y_pred, squared=False)
+
+                # Plot Actual vs Predicted for each model in separate subplots
+                axes[i].plot(y.index, y.values, label="Actual", color="black")
+                axes[i].plot(y.index, y_pred, label=f"Predicted ({model_name})", color="red")
+                axes[i].set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+                axes[i].set_xlabel("Depth")
+                axes[i].set_ylabel("Values")
+                axes[i].grid()
+                axes[i].legend()
+
+        # Adjust layout for better spacing
+        plt.tight_layout()
+        st.pyplot(fig)
+    else:
+        st.warning("⚠ No data or models trained!")
                 
 # Load and predict new data
 def load_and_predict_new_data():
