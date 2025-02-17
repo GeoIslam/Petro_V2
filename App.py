@@ -16,6 +16,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 import seaborn as sns
 import joblib
+from sklearn.tree import plot_tree
 
 # Streamlit page configuration
 st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
@@ -112,8 +113,8 @@ def select_training_data():
         return
 
     st.write("### Select Training Data")
-    target_log = st.multiselect("Select Target Log(s):", dfs[0].columns)  
-    input_logs = st.multiselect("Select Input Logs:", dfs[0].columns, default=[col for col in dfs[0].columns if col not in target_log])
+    target_log = st.selectbox("Select Target Log:", dfs[0].columns)  # Use selectbox for single target log
+    input_logs = st.multiselect("Select Input Logs:", dfs[0].columns, default=[col for col in dfs[0].columns if col != target_log])
 
     if st.button("Confirm Selection"):
         if not target_log or not input_logs:
