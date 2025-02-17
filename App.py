@@ -179,7 +179,7 @@ def plot_histograms():
 
 # Plot correlation matrix and update X data
 def plot_correlation_matrix():
-    global updated_X, Scaled_X
+    global updated_X
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
@@ -224,31 +224,6 @@ def plot_correlation_matrix():
         sns.heatmap(corr_matrix, annot=True, ax=ax_corr, cmap="coolwarm")
         ax_corr.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
-
-        # Add Data Standardization option
-        st.write("### Data Standardization")
-        use_standardization = st.checkbox("Use Data Standardization")
-        
-        if use_standardization:
-            scaler = StandardScaler()
-            Scaled_X = pd.DataFrame(scaler.fit_transform(updated_X), columns=updated_X.columns, index=updated_X.index)
-            st.write("#### Standardized Data Preview")
-            st.dataframe(Scaled_X.head())
-
-            # Plot standardized data as logs
-            st.write("#### Standardized Logs")
-            fig, axes = plt.subplots(nrows=1, ncols=len(Scaled_X.columns), figsize=(15, 6))
-            for i, col in enumerate(Scaled_X.columns):
-                axes[i].plot(Scaled_X[col], Scaled_X.index, label=col)
-                axes[i].set_ylim(Scaled_X.index.max(), Scaled_X.index.min())  # Invert depth axis
-                axes[i].set_xlabel(col)
-                axes[i].set_ylabel("Depth")
-                axes[i].grid()
-            plt.tight_layout()
-            st.pyplot(fig)
-        else:
-            Scaled_X = updated_X  # Use non-standardized data if checkbox is not selected
-
     else:
         st.warning("⚠ No logs selected!")
         
