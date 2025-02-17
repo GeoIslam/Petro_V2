@@ -149,10 +149,16 @@ def plot_histograms():
     input_logs = st.session_state["input_logs"]
     target_log = st.session_state["target_log"]
 
-    if dfs and input_logs and target_log:
-        st.write("### Histograms")
+    # Ensure cleaned data is available
+    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
+        st.warning("⚠ No cleaned data available!")
+        return
 
-        combined_df = pd.concat(dfs, axis=0)  # Combine all data
+    if input_logs and target_log:
+        st.write("### Histograms")
+        
+        # Use the first cleaned dataframe (you can adjust this logic if needed)
+        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)  # Combine all cleaned data
         fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(15, 6))
 
         for i, col in enumerate(input_logs):
@@ -169,6 +175,7 @@ def plot_histograms():
         st.pyplot(fig)
     else:
         st.warning("⚠ No data loaded or logs selected!")
+
 
 # Plot correlation matrix and update X data
 def plot_correlation_matrix():
