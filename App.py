@@ -19,7 +19,6 @@ import joblib
 
 # Streamlit page configuration
 st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
-
 st.title("📊 Petrophysics Expert Robot")
 
 # Global variables
@@ -53,10 +52,6 @@ def load_file():
                     temp_df.reset_index(inplace=True)
                 elif uploaded_file.name.endswith(".csv"):
                     temp_df = pd.read_csv(uploaded_file)
-
-                # Set Depth column as index
-                if "Depth" in temp_df.columns:
-                    temp_df.set_index("Depth", inplace=True)
 
                 dfs.append(temp_df)
                 st.success(f"Loaded: {uploaded_file.name}")
