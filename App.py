@@ -305,34 +305,55 @@ def train_models():
 
 # Show predictions
 def show_predictions():
-    if cleaned_dfs and target_log and input_logs:
-        
-        # Prepare data
-        combined_df = pd.concat(cleaned_dfs, axis=0)
-        X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
-        y = combined_df[target_log].dropna()
-        X_scaled = StandardScaler().fit_transform(X)
+    # Check if cleaned data, target log, and input logs are available
+    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
+        st.warning("⚠ No cleaned data available!")
+        return
 
-        # Create a Matplotlib figure
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(y.index, y.values, label="Actual", color="black")
+    if "target_log" not in st.session_state or "input_logs" not in st.session_state:
+        st.warning("⚠ No logs selected!")
+        return
 
-        # Predictions
-        for model_name, model in models.items():
-            if model is not None:
-                y_pred = model.predict(X_scaled)
-                r2 = r2_score(y, y_pred)
-                rmse = mean_squared_error(y, y_pred, squared=False)
-                ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
-                ax.legend()
-                ax.set_title("Actual vs Predicted")
-                ax.set_xlabel("Depth")
-                ax.set_ylabel("Values")
-                ax.grid()
+    # Access cleaned data, target log, and input logs from session state
+    cleaned_dfs = st.session_state["cleaned_dfs"]
+    target_log = st.session_state["target_log"]
+    input_logs = st.session_state["input_logs"]
 
-    else:
-        st.warning("⚠ Warning, No data or models trained!")
+    # Prepare data
+    combined_df = pd.concat(cleaned_dfs, axis=0)
+    X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
+    y = combined_df[target_log].dropna()
+    X_scaled = StandardScaler().fit_transform(X)
 
+    # Create a Matplotlib figure
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(y.index, y.values, label="Actual", color="black")
+
+    # Predictions
+    for model_name, model in models.items():
+        if model is not None:
+            y_pred = model.predict(X_scaled)
+            r2 = r2_score(y, y_pred)
+            rmse = mean_squared_error(y, y_pred, squared=False)
+            ax.plot(y.index, y_pred, label=f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+            ax.legend()
+            ax.set_title("Actual vs Predicted")
+            ax.set_xlabel("Depth")
+            ax.set_ylabel("Values")
+            ax.grid()
+
+    # Display the plot
+    st.pyplot(fig)
+
+    # Allow the user to save a selected model
+    model_to_save = st.selectbox("Select model to save", list(models.keys()))
+    if model_to_save:
+        save_button = st.button(f"Save {model_to_save}")
+        if save_button:
+            model = models[model_to_save]
+            with open(f"{model_to_save}.pkl", "wb") as file:
+                joblib.dump(model, file)
+            st.success(f"{model_to_save} saved successfully!")
         # Allow the user to save a selected model
         model_to_save = st.selectbox("Select model to save", list(models.keys()))
         if model_to_save:
@@ -438,7 +459,7 @@ def main():
     elif choice == "Train Models":
         train_models()
     elif choice == "Show Predictions":
-        show_predictions()
+        show_predictions()  # Call the updated function
     elif choice == "Load & Predict New Data":
         load_and_predict_new_data()
 
