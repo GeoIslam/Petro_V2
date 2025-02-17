@@ -230,9 +230,21 @@ def plot_correlation_matrix():
 # Train models with hyperparameter selection
 def train_models():
     global models
-    if dfs and target_log and input_logs:
+    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
+        st.warning("⚠ No cleaned data available!")
+        return
+
+    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
+        st.warning("⚠ No logs selected!")
+        return
+
+    input_logs = st.session_state["input_logs"]
+    target_log = st.session_state["target_log"]
+
+    if st.session_state["cleaned_dfs"] and input_logs and target_log:
         model_name = st.selectbox("Choose Model", list(models.keys()))
 
+        # Model selection and hyperparameter tuning
         if model_name == "Linear Regression":
             model = LinearRegression()
         elif model_name == "Random Forest":
@@ -256,9 +268,12 @@ def train_models():
             model = KNeighborsRegressor(n_neighbors=n_neighbors)
 
         if st.button("Train Model"):
-            combined_df = pd.concat(dfs, axis=0)
+            # Use cleaned data and updated_X for training
+            combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
             X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
             y = combined_df[target_log].dropna()
+
+            # Train-test split
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
             # Standardize data
@@ -266,6 +281,7 @@ def train_models():
             X_train = scaler.fit_transform(X_train)
             X_test = scaler.transform(X_test)
 
+            # Train the model
             model.fit(X_train, y_train)
             models[model_name] = model
 
@@ -284,7 +300,8 @@ def train_models():
 
             st.success(f"{model_name} trained successfully!")
     else:
-        st.warning("No data or logs selected!")
+        st.warning("⚠ No data or logs selected!")
+
 
 # Show predictions
 def show_predictions():
