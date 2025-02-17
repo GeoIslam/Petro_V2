@@ -107,20 +107,20 @@ def fix_logs():
 
 # Select target and input logs for Training
 def select_training_data():
-    global target_log, input_logs
     if not dfs:
         st.warning("⚠ No data loaded!")
         return
 
     st.write("### Select Training Data")
-    target_log = st.selectbox("Select Target Log:", dfs[0].columns)  # Use selectbox for single target log
-    input_logs = st.multiselect("Select Input Logs:", dfs[0].columns, default=[col for col in dfs[0].columns if col != target_log])
+    st.session_state["target_log"] = st.selectbox("Select Target Log:", dfs[0].columns)
+    st.session_state["input_logs"] = st.multiselect("Select Input Logs:", dfs[0].columns, 
+                                                     default=[col for col in dfs[0].columns if col != st.session_state["target_log"]])
 
     if st.button("Confirm Selection"):
-        if not target_log or not input_logs:
+        if not st.session_state["target_log"] or not st.session_state["input_logs"]:
             st.warning("⚠ Please select both input and target logs!")
         else:
-            st.success(f"✔ Logs selected successfully!\nTarget: {target_log}\nInputs: {input_logs}")
+            st.success(f"✔ Logs selected successfully!\nTarget: {st.session_state['target_log']}\nInputs: {st.session_state['input_logs']}")
 
 # Plot histograms of input logs and target log
 def plot_histograms():
