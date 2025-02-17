@@ -1,4 +1,5 @@
 import streamlit as st
+import io
 import lasio
 import pandas as pd
 import numpy as np
@@ -43,7 +44,7 @@ def load_file():
         dfs = []
         for uploaded_file in uploaded_files:
             if uploaded_file.name.endswith(".las"):
-                las = lasio.read(uploaded_file)
+                las = lasio.read(io.BytesIO(uploaded_file.getvalue()))
                 temp_df = las.df()
                 temp_df.reset_index(inplace=True)
             elif uploaded_file.name.endswith(".csv"):
