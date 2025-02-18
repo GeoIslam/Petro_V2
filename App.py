@@ -40,40 +40,27 @@ updated_X = None
 def load_file():
     global dfs
     uploaded_files = st.file_uploader("Upload LAS or CSV files", type=["las", "csv"], accept_multiple_files=True)
-    
+
     if not uploaded_files:
         st.warning("No file uploaded yet!")
         return
 
     dfs = []
-    available_logs = set()
-    
     for uploaded_file in uploaded_files:
         try:
-            file_name = uploaded_file.name.lower()
-            if file_name.endswith(".las"):
-                las = lasio.read(io.BytesIO(uploaded_file.read()))
+            if uploaded_file.name.endswith(".las"):
+                las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
                 temp_df = las.df().reset_index()
-            elif file_name.endswith(".csv"):
+            elif uploaded_file.name.endswith(".csv"):
                 temp_df = pd.read_csv(uploaded_file)
-            
-            dfs.append(temp_df)
-            available_logs.update(temp_df.columns)
-            st.success(f"Loaded: {file_name} ({len(temp_df)} rows)")
 
-        except UnicodeDecodeError:
-            st.error(f"Encoding issue with {uploaded_file.name}. Try using UTF-8 encoding.")
+            dfs.append(temp_df)
+            st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
+
         except Exception as e:
-            st.error(f"Error loading {uploaded_file.name}: {str(e)}")
-    
-    if dfs:
-        index_log = st.selectbox("Select the index log (Depth, Time, etc.):", sorted(available_logs))
-        for i, df in enumerate(dfs):
-            if index_log in df.columns:
-                dfs[i] = df.set_index(index_log)
+            st.error(f"Error loading {uploaded_file.name}: {e}")
 
 load_file()
-
 
 # Show input logs
 def show_input_logs():
