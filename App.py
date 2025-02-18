@@ -60,16 +60,12 @@ def load_file():
 
             if uploaded_file.name.endswith(".las"):
                 las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
-                temp_df = las.df().reset_index()
+                temp_df = las.df()
             elif uploaded_file.name.endswith(".csv"):
                 temp_df = pd.read_csv(uploaded_file)
             else:
                 st.error(f"Unsupported file format: {uploaded_file.name}")
                 continue
-
-            # Ensure index is the second column
-            temp_df.insert(2, "Index", temp_df.index)
-            temp_df.reset_index(drop=True, inplace=True)  # Drop the original index
             
             st.session_state["dfs"].append(temp_df)
             st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
