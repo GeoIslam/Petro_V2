@@ -22,50 +22,61 @@ from sklearn.tree import plot_tree
 st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
 st.title("📊 Petrophysics Expert Robot")
 
-# Global variables
-dfs = []  # List to store dataframes for each well
-target_log = None
-input_logs = None
-models = {
-    "Linear Regression": None,
-    "Random Forest": None,
-    "Neural Network": None,
-    "SVR": None,
-    "Gaussian Process": None,
-    "KNN": None
-}
-updated_X = None
+# Initialize session state for global variables
+if "dfs" not in st.session_state:
+    st.session_state["dfs"] = []
+if "target_log" not in st.session_state:
+    st.session_state["target_log"] = None
+if "input_logs" not in st.session_state:
+    st.session_state["input_logs"] = None
+if "models" not in st.session_state:
+    st.session_state["models"] = {
+        "Linear Regression": None,
+        "Random Forest": None,
+        "Neural Network": None,
+        "SVR": None,
+        "Gaussian Process": None,
+        "KNN": None
+    }
+if "updated_X" not in st.session_state:
+    st.session_state["updated_X"] = None
+if "cleaned_dfs" not in st.session_state:
+    st.session_state["cleaned_dfs"] = []
 
 # Load LAS or CSV files
 def load_file():
-    global dfs
     uploaded_files = st.file_uploader("Upload LAS or CSV files", type=["las", "csv"], accept_multiple_files=True)
-
+    
     if not uploaded_files:
         st.warning("No file uploaded yet!")
         return
 
-    dfs = []
+    st.session_state["dfs"] = []
     for uploaded_file in uploaded_files:
         try:
+            if uploaded_file.size > 100 * 1024 * 1024:  # 100 MB limit
+                st.error(f"File {uploaded_file.name} is too large! Max size is 100 MB.")
+                continue
+
             if uploaded_file.name.endswith(".las"):
                 las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
                 temp_df = las.df().reset_index()
             elif uploaded_file.name.endswith(".csv"):
                 temp_df = pd.read_csv(uploaded_file)
+            else:
+                st.error(f"Unsupported file format: {uploaded_file.name}")
+                continue
 
-            dfs.append(temp_df)
+            st.session_state["dfs"].append(temp_df)
             st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
 
         except Exception as e:
             st.error(f"Error loading {uploaded_file.name}: {e}")
 
-load_file()
-
 # Show input logs
 def show_input_logs():
-    if dfs:
-        for i, df in enumerate(dfs):
+    if st.session_state["dfs"]:
+        for i, df in enumerate(st.session_state["dfs"]):
             st.write(f"Well {i+1} Logs")
             fig, axes = plt.subplots(nrows=1, ncols=len(df.columns), figsize=(15, 6))
             for j, col in enumerate(df.columns):
@@ -81,20 +92,22 @@ def show_input_logs():
 
 # Fix missing values
 def fix_logs():
-    global dfs
-    if not dfs:
+    if "dfs" not in st.session_state or not st.session_state["dfs"]:
         st.warning("⚠ No data loaded!")
         return
 
     missing_values = st.text_input("Enter missing values to replace (comma separated, e.g., -999.25, -999)", "-999.25,-999,-9999")
     missing_values = [float(val.strip()) for val in missing_values.split(",")]
 
-    cleaned_dfs = []  # To store cleaned dataframes
-
-    for df in dfs:
+    cleaned_dfs = []
+    for df in st.session_state["dfs"]:
         df.replace(missing_values, np.nan, inplace=True)
         fill_method = st.selectbox("Choose method to fill missing values", ["Drop Rows", "Fill with Mean", "Fill with Median", "Interpolate"])
-        
+
+        if st.button("Preview Changes"):
+            st.write("Before Cleaning:")
+            st.write(df.head())
+
         if fill_method == "Drop Rows":
             df.dropna(inplace=True)
         elif fill_method == "Fill with Mean":
@@ -104,17 +117,13 @@ def fix_logs():
         elif fill_method == "Interpolate":
             df.interpolate(inplace=True)
 
-        cleaned_dfs.append(df)  # Store the cleaned dataframe
+        cleaned_dfs.append(df)
 
-    # Store cleaned data in session state for future use
     st.session_state["cleaned_dfs"] = cleaned_dfs
-
     st.success("✔ Data cleaned successfully!")
     show_input_logs()
 
-    # Save button to store cleaned data
     if st.button("Save Cleaned Logs"):
-        # Store cleaned data in session state
         st.session_state["cleaned_dfs"] = cleaned_dfs
         st.success("✔ Cleaned logs saved to session state!")
     else:
@@ -129,7 +138,6 @@ def select_training_data():
     st.write("### Select Training Data")
     df = st.session_state["cleaned_dfs"][0]
     
-    # Select target log and input logs from cleaned data
     st.session_state["target_log"] = st.selectbox("Select Target Log:", df.columns)
     st.session_state["input_logs"] = st.multiselect("Select Input Logs:", df.columns, 
                                                      default=[col for col in df.columns if col != st.session_state["target_log"]])
@@ -149,16 +157,13 @@ def plot_histograms():
     input_logs = st.session_state["input_logs"]
     target_log = st.session_state["target_log"]
 
-    # Ensure cleaned data is available
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
 
     if input_logs and target_log:
         st.write("### Histograms")
-        
-        # Use the first cleaned dataframe 
-        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)  # Combine all cleaned data
+        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
         fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(25, 6))
 
         for i, col in enumerate(input_logs):
@@ -166,7 +171,6 @@ def plot_histograms():
                 axes[i].hist(combined_df[col].dropna(), bins=30, edgecolor='black', alpha=0.7)
                 axes[i].set_title(col)
 
-        # Plot the target log
         if target_log in combined_df.columns:
             axes[-1].hist(combined_df[target_log].dropna(), bins=30, edgecolor='black', alpha=0.7, color='red')
             axes[-1].set_title(target_log)
@@ -176,10 +180,8 @@ def plot_histograms():
     else:
         st.warning("⚠ No data loaded or logs selected!")
 
-
 # Plot correlation matrix and update X data
 def plot_correlation_matrix():
-    global updated_X
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
@@ -189,47 +191,39 @@ def plot_correlation_matrix():
         return
 
     input_logs = st.session_state["input_logs"]
-    
-    # Use cleaned data
     combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
     
     if input_logs:
         st.write("### Correlation Matrix")
-
-        # Calculate the correlation matrix
         corr_matrix = combined_df[input_logs].corr()
 
-        # Drop highly correlated features
         high_corr = set()
         for i in range(len(corr_matrix.columns)):
             for j in range(i):
                 if abs(corr_matrix.iloc[i, j]) > 0.8:
                     high_corr.add(corr_matrix.columns[i])
 
-        updated_X = combined_df[input_logs].drop(columns=high_corr)
+        st.session_state["updated_X"] = combined_df[input_logs].drop(columns=high_corr)
 
-        # Plot updated X data as logs
-        fig, axes = plt.subplots(nrows=1, ncols=len(updated_X.columns), figsize=(15, 6))
-        for i, col in enumerate(updated_X.columns):
-            axes[i].plot(updated_X[col], updated_X.index, label=col)
-            axes[i].set_ylim(updated_X.index.max(), updated_X.index.min())  # Invert depth axis
+        fig, axes = plt.subplots(nrows=1, ncols=len(st.session_state["updated_X"].columns), figsize=(15, 6))
+        for i, col in enumerate(st.session_state["updated_X"].columns):
+            axes[i].plot(st.session_state["updated_X"][col], st.session_state["updated_X"].index, label=col)
+            axes[i].set_ylim(st.session_state["updated_X"].index.max(), st.session_state["updated_X"].index.min())
             axes[i].set_xlabel(col)
             axes[i].set_ylabel("Depth")
             axes[i].grid()
         plt.tight_layout()
         st.pyplot(fig)
 
-        # Plot correlation matrix
         fig_corr, ax_corr = plt.subplots(figsize=(8, 6))
         sns.heatmap(corr_matrix, annot=True, ax=ax_corr, cmap="coolwarm")
         ax_corr.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
     else:
         st.warning("⚠ No logs selected!")
-        
+
 # Train models with hyperparameter selection
 def train_models():
-    global models
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
@@ -242,9 +236,8 @@ def train_models():
     target_log = st.session_state["target_log"]
 
     if st.session_state["cleaned_dfs"] and input_logs and target_log:
-        model_name = st.selectbox("Choose Model", list(models.keys()))
+        model_name = st.selectbox("Choose Model", list(st.session_state["models"].keys()))
 
-        # Model selection and hyperparameter tuning
         if model_name == "Linear Regression":
             model = LinearRegression()
         elif model_name == "Random Forest":
@@ -261,7 +254,6 @@ def train_models():
             gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
             model = SVR(kernel=kernel, C=C, gamma=gamma)
         elif model_name == "Gaussian Process":
-            # Define the kernel using RBF and Constant Kernel
             kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
             model = GaussianProcessRegressor(kernel=kernel, random_state=42)
         elif model_name == "KNN":
@@ -269,37 +261,19 @@ def train_models():
             model = KNeighborsRegressor(n_neighbors=n_neighbors)
 
         if st.button("Train Model"):
-            # Use cleaned data and updated_X for training
-            combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-            X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
-            y = combined_df[target_log].dropna()
+            with st.spinner("Training in progress..."):
+                combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
+                X = st.session_state["updated_X"].dropna() if st.session_state["updated_X"] is not None else combined_df[input_logs].dropna()
+                y = combined_df[target_log].dropna()
 
-            # Train-test split
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+                scaler = StandardScaler()
+                X_train = scaler.fit_transform(X_train)
+                X_test = scaler.transform(X_test)
 
-            # Standardize data
-            scaler = StandardScaler()
-            X_train = scaler.fit_transform(X_train)
-            X_test = scaler.transform(X_test)
-
-            # Train the model
-            model.fit(X_train, y_train)
-            models[model_name] = model
-
-            # Visualize model structure
-            if model_name == "Random Forest":
-                fig, ax = plt.subplots(figsize=(10, 6))
-                plot_tree(model.estimators_[0], filled=True, ax=ax, feature_names=X.columns, max_depth=3)
-                plt.title("Random Forest Tree")
-                st.pyplot(fig)
-            elif model_name == "Neural Network":
-                fig, ax = plt.subplots(figsize=(10, 6))
-                ax.text(0.5, 0.5, f"NN Architecture: {hidden_layer_sizes}", fontsize=12, ha="center")
-                ax.axis("off")
-                plt.title("Neural Network Architecture")
-                st.pyplot(fig)
-
-            st.success(f"{model_name} trained successfully!")
+                model.fit(X_train, y_train)
+                st.session_state["models"][model_name] = model
+                st.success(f"{model_name} trained successfully!")
     else:
         st.warning("⚠ No data or logs selected!")
 
@@ -316,37 +290,29 @@ def show_predictions():
     input_logs = st.session_state["input_logs"]
     target_log = st.session_state["target_log"]
 
-    if st.session_state["cleaned_dfs"] and input_logs and target_log and models:
-        # Combine cleaned data
+    if st.session_state["cleaned_dfs"] and input_logs and target_log and st.session_state["models"]:
         combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-
-        # Align X and y based on input and target logs
-        X = updated_X.dropna() if updated_X is not None else combined_df[input_logs].dropna()
+        X = st.session_state["updated_X"].dropna() if st.session_state["updated_X"] is not None else combined_df[input_logs].dropna()
         y = combined_df[target_log].dropna()
 
-        # Ensure X and y have the same index after dropping NaNs
         common_index = X.index.intersection(y.index)
         X = X.loc[common_index]
         y = y.loc[common_index]
 
-        # Standardize the data
         X_scaled = StandardScaler().fit_transform(X)
 
-        # Create a subplot grid for each model's predictions
-        num_models = len(models)
+        num_models = len(st.session_state["models"])
         fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
 
         if num_models == 1:
-            axes = [axes]  # Ensure axes is iterable if there's only one model
+            axes = [axes]
 
-        # Predictions from each trained model
-        for i, (model_name, model) in enumerate(models.items()):
+        for i, (model_name, model) in enumerate(st.session_state["models"].items()):
             if model is not None:
                 y_pred = model.predict(X_scaled)
                 r2 = r2_score(y, y_pred)
                 rmse = mean_squared_error(y, y_pred, squared=False)
 
-                # Plot Actual vs Predicted for each model in separate subplots
                 axes[i].plot(y.index, y.values, label="Actual", color="black")
                 axes[i].plot(y.index, y_pred, label=f"Predicted ({model_name})", color="red")
                 axes[i].set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
@@ -355,12 +321,11 @@ def show_predictions():
                 axes[i].grid()
                 axes[i].legend()
 
-        # Adjust layout for better spacing
         plt.tight_layout()
         st.pyplot(fig)
     else:
         st.warning("⚠ No data or models trained!")
-                
+
 # Load and predict new data
 def load_and_predict_new_data():
     uploaded_file = st.file_uploader("Upload new LAS or CSV file", type=["las", "csv"])
@@ -372,40 +337,34 @@ def load_and_predict_new_data():
         elif uploaded_file.name.endswith(".csv"):
             new_df = pd.read_csv(uploaded_file)
 
-        # Set Depth column as index
         if "Depth" in new_df.columns:
             new_df.set_index("Depth", inplace=True)
 
-        # Select input logs
         input_logs_new = st.multiselect("Select Input Logs for Prediction", new_df.columns)
         if input_logs_new:
             X_new = new_df[input_logs_new].dropna()
             X_new_scaled = StandardScaler().fit_transform(X_new)
 
-            # Predictions
             predictions = {}
-            for model_name, model in models.items():
+            for model_name, model in st.session_state["models"].items():
                 if model is not None:
                     y_pred_new = model.predict(X_new_scaled)
                     predictions[model_name] = y_pred_new
 
-            # Create a DataFrame for predictions
             pred_df = pd.DataFrame(predictions, index=X_new.index)
             pred_df["Depth"] = pred_df.index
 
-            # Show new logs
             st.write("New Logs")
             fig, axes = plt.subplots(nrows=1, ncols=len(input_logs_new), figsize=(15, 6))
             for i, col in enumerate(input_logs_new):
                 axes[i].plot(new_df[col], new_df.index, label=col)
-                axes[i].set_ylim(new_df.index.max(), new_df.index.min())  # Invert depth axis
+                axes[i].set_ylim(new_df.index.max(), new_df.index.min())
                 axes[i].set_xlabel(col)
                 axes[i].set_ylabel("Depth")
                 axes[i].grid()
             plt.tight_layout()
             st.pyplot(fig)
 
-            # Show predicted log
             st.write("Predicted Log")
             fig, ax = plt.subplots(figsize=(10, 6))
             for model_name in pred_df.columns:
@@ -418,17 +377,19 @@ def load_and_predict_new_data():
             ax.grid()
             st.pyplot(fig)
 
-            # Export results
             if st.button("Export Results"):
                 export_path = st.text_input("Enter file path to save results (e.g., results.las or results.csv)")
                 if export_path:
-                    if export_path.endswith(".las"):
-                        las = lasio.LASFile()
-                        las.set_data_from_df(pred_df)
-                        las.write(export_path)
-                    elif export_path.endswith(".csv"):
-                        pred_df.to_csv(export_path, index=False)
-                    st.success("Results exported successfully!")
+                    if not export_path.endswith((".las", ".csv")):
+                        st.error("Invalid file format! Use .las or .csv.")
+                    else:
+                        if export_path.endswith(".las"):
+                            las = lasio.LASFile()
+                            las.set_data_from_df(pred_df)
+                            las.write(export_path)
+                        elif export_path.endswith(".csv"):
+                            pred_df.to_csv(export_path, index=False)
+                        st.success("Results exported successfully!")
     else:
         st.warning("No file selected!")
 
@@ -444,7 +405,7 @@ def main():
     elif choice == "Show Input Logs":
         show_input_logs()
     elif choice == "Fix Logs":
-        fix_logs()   
+        fix_logs()
     elif choice == "Select Training Data":
         select_training_data()
     elif choice == "Plot Histograms":
@@ -454,7 +415,7 @@ def main():
     elif choice == "Train Models":
         train_models()
     elif choice == "Show Predictions":
-        show_predictions()  # Call the updated function
+        show_predictions()
     elif choice == "Load & Predict New Data":
         load_and_predict_new_data()
 
