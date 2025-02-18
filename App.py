@@ -23,43 +23,53 @@ st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
 st.title("📊 Petrophysics Expert Robot")
 
 # Global variables
-dfs = []  # List to store dataframes for each well
-target_log = None
-input_logs = None
-models = {
-    "Linear Regression": None,
-    "Random Forest": None,
-    "Neural Network": None,
-    "SVR": None,
-    "Gaussian Process": None,
-    "KNN": None
-}
-updated_X = None
+if "dfs" not in st.session_state:
+    st.session_state["dfs"] = []
+if "target_log" not in st.session_state:
+    st.session_state["target_log"] = None
+if "input_logs" not in st.session_state:
+    st.session_state["input_logs"] = None
+if "models" not in st.session_state:
+    st.session_state["models"] = {
+        "Linear Regression": None,
+        "Random Forest": None,
+        "Neural Network": None,
+        "SVR": None,
+        "Gaussian Process": None,
+        "KNN": None
+    }
+if "updated_X" not in st.session_state:
+    st.session_state["updated_X"] = None
 
 # Load LAS or CSV files
 def load_file():
-    global dfs
     uploaded_files = st.file_uploader("Upload LAS or CSV files", type=["las", "csv"], accept_multiple_files=True)
-
+    
     if not uploaded_files:
         st.warning("No file uploaded yet!")
         return
 
-    dfs = []
+    st.session_state["dfs"] = []
     for uploaded_file in uploaded_files:
         try:
+            if uploaded_file.size > 100 * 1024 * 1024:  # 100 MB limit
+                st.error(f"File {uploaded_file.name} is too large! Max size is 100 MB.")
+                continue
+
             if uploaded_file.name.endswith(".las"):
                 las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
                 temp_df = las.df().reset_index()
             elif uploaded_file.name.endswith(".csv"):
                 temp_df = pd.read_csv(uploaded_file)
+            else:
+                st.error(f"Unsupported file format: {uploaded_file.name}")
+                continue
 
-            dfs.append(temp_df)
+            st.session_state["dfs"].append(temp_df)
             st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
 
         except Exception as e:
             st.error(f"Error loading {uploaded_file.name}: {e}")
-
 load_file()
 
 # Show input logs
