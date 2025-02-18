@@ -40,7 +40,7 @@ updated_X = None
 def load_file():
     global dfs
     uploaded_files = st.file_uploader("Upload LAS or CSV files", type=["las", "csv"], accept_multiple_files=True)
-    
+
     if not uploaded_files:
         st.warning("No file uploaded yet!")
         return
@@ -48,23 +48,17 @@ def load_file():
     dfs = []
     for uploaded_file in uploaded_files:
         try:
-            file_name = uploaded_file.name.lower()
-            if file_name.endswith(".las"):
-                # Use BytesIO for binary LAS file handling
-                las = lasio.read(io.BytesIO(uploaded_file.read()))
+            if uploaded_file.name.endswith(".las"):
+                las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
                 temp_df = las.df().reset_index()
-            elif file_name.endswith(".csv"):
-                # Use chunksize to handle large files efficiently
-                temp_df = pd.read_csv(uploaded_file, chunksize=10000)
-                temp_df = pd.concat(temp_df, ignore_index=True)
+            elif uploaded_file.name.endswith(".csv"):
+                temp_df = pd.read_csv(uploaded_file)
 
             dfs.append(temp_df)
-            st.success(f"Loaded: {file_name} ({len(temp_df)} rows)")
+            st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
 
-        except UnicodeDecodeError:
-            st.error(f"Encoding issue with {uploaded_file.name}. Try using UTF-8 encoding.")
         except Exception as e:
-            st.error(f"Error loading {uploaded_file.name}: {str(e)}")
+            st.error(f"Error loading {uploaded_file.name}: {e}")
 
 load_file()
 
