@@ -74,8 +74,8 @@ load_file()
 
 # Show input logs
 def show_input_logs():
-    if dfs:
-        for i, df in enumerate(dfs):
+    if "dfs" not in st.session_state or not st.session_state["dfs"]:
+        for i, df in st.session_state["dfs"]:
             st.write(f"Well {i+1} Logs")
             fig, axes = plt.subplots(nrows=1, ncols=len(df.columns), figsize=(15, 6))
             for j, col in enumerate(df.columns):
