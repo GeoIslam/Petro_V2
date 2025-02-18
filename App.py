@@ -68,7 +68,7 @@ def load_file():
                 continue
 
             # Ensure index is the second column
-            temp_df.insert(1, "Index", temp_df.index)
+            temp_df.insert(2, "Index", temp_df.index)
             temp_df.reset_index(drop=True, inplace=True)  # Drop the original index
             
             st.session_state["dfs"].append(temp_df)
