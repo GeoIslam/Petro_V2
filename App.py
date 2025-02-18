@@ -54,8 +54,8 @@ def load_file():
     st.session_state["dfs"] = []
     for uploaded_file in uploaded_files:
         try:
-            if uploaded_file.size > 100 * 1024 * 1024:  # 100 MB limit
-                st.error(f"File {uploaded_file.name} is too large! Max size is 100 MB.")
+            if uploaded_file.size > 200 * 1024 * 1024:  # 200 MB limit
+                st.error(f"File {uploaded_file.name} is too large! Max size is 200 MB.")
                 continue
 
             if uploaded_file.name.endswith(".las"):
@@ -67,6 +67,10 @@ def load_file():
                 st.error(f"Unsupported file format: {uploaded_file.name}")
                 continue
 
+            # Ensure index is the second column
+            temp_df.insert(1, "Index", temp_df.index)
+            temp_df.reset_index(drop=True, inplace=True)  # Drop the original index
+            
             st.session_state["dfs"].append(temp_df)
             st.success(f"Loaded: {uploaded_file.name} ({len(temp_df)} rows)")
 
