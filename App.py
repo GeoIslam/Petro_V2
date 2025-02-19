@@ -107,6 +107,7 @@ def show_input_logs():
                             type="horizontal",
                             colorscale=[(0.0, "darkblue"), (0.5, "royalblue"), (1.0, "cyan")],
                         ),
+                       ),
                     row=1, 
                     col=j+1
                 )
