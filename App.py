@@ -261,7 +261,7 @@ def train_and_show_predictions():
         elif model_name == "Neural Network":
             if st.checkbox("Run Random Search for Hyperparameters"):
                 param_dist = {
-                    "hidden_layer_sizes": [(randint(10, 100), (randint(10, 100))],
+                    "hidden_layer_sizes": [(randint(10, 100)), (randint(10, 100))],
                     "max_iter": randint(100, 1000),
                 }
                 model = RandomizedSearchCV(
