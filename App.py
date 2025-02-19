@@ -62,7 +62,7 @@ def load_file():
                 las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8", errors="ignore")))
                 temp_df = las.df()
             elif uploaded_file.name.endswith(".csv"):
-                temp_df = pd.read_csv(uploaded_file, index_col=1)
+                temp_df = pd.read_csv(uploaded_file, index_col=0)
             else:
                 st.error(f"Unsupported file format: {uploaded_file.name}")
                 continue
