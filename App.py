@@ -382,14 +382,14 @@ def train_models_and_show_predictions():
                     y=y.values,
                     mode='lines',
                     name='Actual',
-                    line=dict(color='black', width=2, opacity=0.7)
+                    line=dict(color='rgba(0, 0, 0, 0.7)', width=2)
                 ))
                 fig.add_trace(go.Scatter(
                     x=y.index,
                     y=y_pred,
                     mode='lines',
                     name='Predicted',
-                    line=dict(color='red', width=2, opacity=0.7)
+                    line=dict(color='rgba(255, 0, 0, 0.7)', width=2)
                 ))
                 # Update layout
                 fig.update_layout(
