@@ -77,8 +77,13 @@ def load_file():
             st.error(f"Error loading {uploaded_file.name}: {e}")
 
 # Show input logs with interactive and colorful plots
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import streamlit as st
+import numpy as np
+
 def show_input_logs():
-    if st.session_state["dfs"]:
+    if "dfs" in st.session_state and st.session_state["dfs"]:
         for i, df in enumerate(st.session_state["dfs"]):
             st.subheader(f"Well {i+1} Logs")
 
@@ -95,7 +100,14 @@ def show_input_logs():
                 min_val = df[col].min()
                 max_val = df[col].max()
 
-                # Add each log with variable fill based on its values
+                # Normalize log values for color mapping
+                normalized_values = (df[col] - min_val) / (max_val - min_val)
+                colorscale = [(0.0, "darkblue"), (0.5, "royalblue"), (1.0, "cyan")]
+
+                # Generate gradient color for fill
+                fill_colors = [f'rgba(0, 0, 255, {v})' for v in normalized_values]
+
+                # Add log curve
                 fig.add_trace(
                     go.Scatter(
                         x=df[col], 
@@ -103,11 +115,24 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fillgradient=dict(
-                            type="horizontal",
-                            colorscale=[(0.0, "darkblue"), (0.5, "royalblue"), (1.0, "cyan")],
-                        ),
-                       ),
+                        fill='tonextx',
+                        fillcolor='rgba(0, 0, 255, 0.3)',  # Semi-transparent fill
+                    ),
+                    row=1, 
+                    col=j+1
+                )
+
+                # Add invisible baseline to apply fill effect
+                fig.add_trace(
+                    go.Scatter(
+                        x=[min_val] * len(df.index), 
+                        y=df.index,
+                        mode='lines',
+                        line=dict(color='rgba(0,0,0,0)'),  # Invisible line
+                        fill='tonextx',
+                        fillcolor='rgba(0, 0, 255, 0.3)',
+                        showlegend=False
+                    ),
                     row=1, 
                     col=j+1
                 )
@@ -121,16 +146,9 @@ def show_input_logs():
                     gridwidth=0.5, 
                     gridcolor='gray'
                 )
-                
-                # Update y-axis with fine grid
-                fig.update_yaxes(
-                    showgrid=True, 
-                    gridwidth=0.5, 
-                    gridcolor='gray'
-                )
 
             # General layout updates
-            fig.update_yaxes(title="Depth (m)", autorange="reversed")
+            fig.update_yaxes(title="Depth (m)", autorange="reversed", showgrid=True, gridwidth=0.5, gridcolor='gray')
             fig.update_layout(
                 height=1000,  # Increase height for deep wells
                 width=300 * len(df.columns),  # Adjust width dynamically
@@ -143,6 +161,7 @@ def show_input_logs():
 
     else:
         st.warning("No data loaded!")
+
 
 # Fix missing values
 def fix_logs():
