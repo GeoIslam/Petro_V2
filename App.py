@@ -91,10 +91,9 @@ def show_input_logs():
                 subplot_titles=df.columns
             )
 
-            # Generate a color palette for columns
-            colors = px.colors.qualitative.Plotly
-
-            # Add each log to its own subplot
+            # Generate a grayscale color palette for filled areas
+            grayscale_colors = px.colors.sequential.Greys
+            
             for j, col in enumerate(df.columns):
                 fig.add_trace(
                     go.Scatter(
@@ -102,22 +101,38 @@ def show_input_logs():
                         y=df.index,
                         mode='lines',
                         name=col,
-                        line=dict(color=colors[j % len(colors)]),
+                        line=dict(color='black', width=1),
+                        fill='tozerox',
+                        fillcolor=grayscale_colors[(j * 2) % len(grayscale_colors)]
                     ),
                     row=1, 
                     col=j+1
                 )
 
-                # Update each x-axis individually
-                fig.update_xaxes(title_text=col, row=1, col=j+1)
+                # Update each x-axis individually with fine grid
+                fig.update_xaxes(
+                    title_text=col, 
+                    row=1, 
+                    col=j+1,
+                    showgrid=True, 
+                    gridwidth=0.5, 
+                    gridcolor='gray'
+                )
+                
+                # Update y-axis for fine grid as well
+                fig.update_yaxes(
+                    showgrid=True, 
+                    gridwidth=0.5, 
+                    gridcolor='gray'
+                )
 
             # General layout updates
             fig.update_yaxes(title="Depth (m)", autorange="reversed")
             fig.update_layout(
-                height=600,
-                width=300 * len(df.columns),  # Dynamic width based on the number of tracks
+                height=1000,  # Make the plot taller
+                width=300 * len(df.columns),  # Dynamic width
                 title=f"Well {i+1} - Log Visualization",
-                template="plotly_dark",
+                template="plotly_white",
                 hovermode="y unified"
             )
 
