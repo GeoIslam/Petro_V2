@@ -257,7 +257,7 @@ def plot_correlation_matrix():
     combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
     
     if input_logs:
-        st.write("### Correlation Matrix")
+        st.write("### Selected Input Logs")
         corr_matrix = combined_df[input_logs].corr()
 
         high_corr = set()
@@ -268,7 +268,7 @@ def plot_correlation_matrix():
 
         st.session_state["updated_X"] = combined_df[input_logs].drop(columns=high_corr)
 
-        fig, axes = plt.subplots(nrows=1, ncols=len(st.session_state["updated_X"].columns), figsize=(15, 6))
+        fig, axes = plt.subplots(nrows=1, ncols=len(st.session_state["updated_X"].columns), figsize=(10, 5))
         for i, col in enumerate(st.session_state["updated_X"].columns):
             axes[i].plot(st.session_state["updated_X"][col], st.session_state["updated_X"].index, label=col)
             axes[i].set_ylim(st.session_state["updated_X"].index.max(), st.session_state["updated_X"].index.min())
