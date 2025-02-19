@@ -443,7 +443,7 @@ def load_and_predict_new_data():
 def main():
     st.title("Petrophysical Property Predictor")
 
-    menu = ["Load File", "Show Input Logs", "Fix Logs", "Select Training Data", "Plot Histograms", "Plot Correlation Matrix", "Train Models", "Show Predictions", "Load & Predict New Data"]
+    menu = ["Load File", "Show Input Logs", "Fix Logs", "Select Training Data", "Plot Histograms", "Plot Correlation Matrix", "Train Models and Show Predictions", "Load & Predict New Data"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Load File":
@@ -458,10 +458,8 @@ def main():
         plot_histograms()
     elif choice == "Plot Correlation Matrix":
         plot_correlation_matrix()
-    elif choice == "Train Models":
-        train_models()
-    elif choice == "Show Predictions":
-        show_predictions()
+    elif choice == "Train Models and Show Predictions":
+        train_and_show_predictions()
     elif choice == "Load & Predict New Data":
         load_and_predict_new_data()
 
