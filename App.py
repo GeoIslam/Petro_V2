@@ -82,30 +82,43 @@ def show_input_logs():
         for i, df in enumerate(st.session_state["dfs"]):
             st.subheader(f"Well {i+1} Logs")
             
-            # Create a plotly figure with subplots
-            fig = go.Figure()
+            # Create subplots with a separate track for each log
+            fig = make_subplots(
+                rows=1, 
+                cols=len(df.columns), 
+                shared_yaxes=True,
+                horizontal_spacing=0.02,
+                subplot_titles=df.columns
+            )
 
             # Generate a color palette for columns
             colors = px.colors.qualitative.Plotly
 
+            # Add each log to its own subplot
             for j, col in enumerate(df.columns):
-                fig.add_trace(go.Scatter(
-                    x=df[col], 
-                    y=df.index,
-                    mode='lines',
-                    name=col,
-                    line=dict(color=colors[j % len(colors)]),  # Cycle through colors
-                ))
+                fig.add_trace(
+                    go.Scatter(
+                        x=df[col], 
+                        y=df.index,
+                        mode='lines',
+                        name=col,
+                        line=dict(color=colors[j % len(colors)]),
+                    ),
+                    row=1, 
+                    col=j+1
+                )
 
-            # Update layout for better visualization
-            fig.update_yaxes(autorange="reversed", title="Depth")
-            fig.update_xaxes(title="Log Values")
+                # Update each x-axis individually
+                fig.update_xaxes(title_text=col, row=1, col=j+1)
+
+            # General layout updates
+            fig.update_yaxes(title="Depth (m)", autorange="reversed")
             fig.update_layout(
                 height=600,
-                width=800,
+                width=300 * len(df.columns),  # Dynamic width based on the number of tracks
                 title=f"Well {i+1} - Log Visualization",
-                template="plotly_dark",  # You can use "plotly", "seaborn", "ggplot2", etc.
-                hovermode="x unified"
+                template="plotly_dark",
+                hovermode="y unified"
             )
 
             st.plotly_chart(fig, use_container_width=True)
