@@ -93,8 +93,20 @@ def show_input_logs():
 
             for j, col in enumerate(df.columns):
                 min_val = df[col].min()
+                
+                # Fill from log's minimum value to the log value
+                fig.add_trace(
+                    go.Scatter(
+                        x=[min_val]*len(df.index), 
+                        y=df.index,
+                        mode='lines',
+                        line=dict(color='rgba(128, 128, 128, 0.3)', width=0),  # Transparent line
+                        showlegend=False,
+                    ),
+                    row=1, 
+                    col=j+1
+                )
 
-                # Add log curve with semi-transparent grey fill from min value to log value
                 fig.add_trace(
                     go.Scatter(
                         x=df[col], 
@@ -102,7 +114,7 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fill='tozerox',
+                        fill='tonextx',
                         fillcolor='rgba(128, 128, 128, 0.3)',  # Semi-transparent grey fill
                     ),
                     row=1, 
