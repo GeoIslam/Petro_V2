@@ -278,7 +278,7 @@ def plot_correlation_matrix():
         plt.tight_layout()
         st.pyplot(fig)
 
-        fig_corr, ax_corr = plt.subplots(figsize=(10, 10))
+        fig_corr, ax_corr = plt.subplots(figsize=(10, 8))
         sns.heatmap(corr_matrix, annot=True, ax=ax_corr, cmap="coolwarm")
         ax_corr.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
@@ -376,7 +376,7 @@ def train_models_and_show_predictions():
                 metrics_df = pd.DataFrame(metrics_data)
 
                 # Plot Predictions
-                fig, ax = plt.subplots(figsize=(6, 5))
+                fig, ax = plt.subplots(figsize=(12, 5))
                 ax.plot(y.index, y.values, label="Actual", color="black")
                 ax.plot(y.index, y_pred, label="Predicted", color="red")
                 ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
