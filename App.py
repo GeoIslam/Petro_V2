@@ -222,8 +222,8 @@ def plot_correlation_matrix():
     else:
         st.warning("⚠ No logs selected!")
 
-# Train models with hyperparameter selection
-def train_models():
+# Train Models and Show Predictions
+def train_and_show_predictions():
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
@@ -238,28 +238,82 @@ def train_models():
     if st.session_state["cleaned_dfs"] and input_logs and target_log:
         model_name = st.selectbox("Choose Model", list(st.session_state["models"].keys()))
 
+        # Hyperparameter selection
         if model_name == "Linear Regression":
             model = LinearRegression()
         elif model_name == "Random Forest":
-            n_estimators = st.slider("Number of Trees", 10, 200, 100)
-            max_depth = st.slider("Max Depth", 1, 20, 10)
-            model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+            if st.checkbox("Run Random Search for Hyperparameters"):
+                param_dist = {
+                    "n_estimators": randint(10, 200),
+                    "max_depth": randint(1, 20),
+                }
+                model = RandomizedSearchCV(
+                    RandomForestRegressor(random_state=42),
+                    param_distributions=param_dist,
+                    n_iter=10,
+                    cv=3,
+                    random_state=42,
+                )
+            else:
+                n_estimators = st.slider("Number of Trees", 10, 200, 100)
+                max_depth = st.slider("Max Depth", 1, 20, 10)
+                model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
         elif model_name == "Neural Network":
-            hidden_layer_sizes = st.text_input("Hidden Layer Sizes (e.g., 64,64)", "64,64")
-            max_iter = st.slider("Max Iterations", 100, 1000, 100)
-            model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
+            if st.checkbox("Run Random Search for Hyperparameters"):
+                param_dist = {
+                    "hidden_layer_sizes": [(randint(10, 100), (randint(10, 100))],
+                    "max_iter": randint(100, 1000),
+                }
+                model = RandomizedSearchCV(
+                    MLPRegressor(random_state=42),
+                    param_distributions=param_dist,
+                    n_iter=10,
+                    cv=3,
+                    random_state=42,
+                )
+            else:
+                hidden_layer_sizes = st.text_input("Hidden Layer Sizes (e.g., 64,64)", "64,64")
+                max_iter = st.slider("Max Iterations", 100, 1000, 100)
+                model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
         elif model_name == "SVR":
-            kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
-            C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
-            gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
-            model = SVR(kernel=kernel, C=C, gamma=gamma)
+            if st.checkbox("Run Random Search for Hyperparameters"):
+                param_dist = {
+                    "kernel": ["rbf", "linear"],
+                    "C": uniform(0.1, 10.0),
+                    "gamma": ["scale", "auto"],
+                }
+                model = RandomizedSearchCV(
+                    SVR(),
+                    param_distributions=param_dist,
+                    n_iter=10,
+                    cv=3,
+                    random_state=42,
+                )
+            else:
+                kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
+                C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
+                gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
+                model = SVR(kernel=kernel, C=C, gamma=gamma)
         elif model_name == "Gaussian Process":
             kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
             model = GaussianProcessRegressor(kernel=kernel, random_state=42)
         elif model_name == "KNN":
-            n_neighbors = st.slider("Number of Neighbors", 1, 20, 5)
-            model = KNeighborsRegressor(n_neighbors=n_neighbors)
+            if st.checkbox("Run Random Search for Hyperparameters"):
+                param_dist = {
+                    "n_neighbors": randint(1, 20),
+                }
+                model = RandomizedSearchCV(
+                    KNeighborsRegressor(),
+                    param_distributions=param_dist,
+                    n_iter=10,
+                    cv=3,
+                    random_state=42,
+                )
+            else:
+                n_neighbors = st.slider("Number of Neighbors", 1, 20, 5)
+                model = KNeighborsRegressor(n_neighbors=n_neighbors)
 
+        # Train the model
         if st.button("Train Model"):
             with st.spinner("Training in progress..."):
                 combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
@@ -274,58 +328,50 @@ def train_models():
                 model.fit(X_train, y_train)
                 st.session_state["models"][model_name] = model
                 st.success(f"{model_name} trained successfully!")
+
+                # Save model button
+                if st.button("Save Model"):
+                    with open(f"{model_name}_model.pkl", "wb") as f:
+                        pickle.dump(model, f)
+                    st.success(f"{model_name} saved successfully!")
+
+        # Show predictions
+        if st.session_state["models"]:
+            combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
+            X = st.session_state["updated_X"].dropna() if st.session_state["updated_X"] is not None else combined_df[input_logs].dropna()
+            y = combined_df[target_log].dropna()
+
+            common_index = X.index.intersection(y.index)
+            X = X.loc[common_index]
+            y = y.loc[common_index]
+
+            X_scaled = StandardScaler().fit_transform(X)
+
+            num_models = len(st.session_state["models"])
+            fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
+
+            if num_models == 1:
+                axes = [axes]
+
+            for i, (model_name, model) in enumerate(st.session_state["models"].items()):
+                if model is not None:
+                    y_pred = model.predict(X_scaled)
+                    r2 = r2_score(y, y_pred)
+                    rmse = mean_squared_error(y, y_pred, squared=False)
+
+                    axes[i].plot(y.index, y.values, label="Actual", color="black")
+                    axes[i].plot(y.index, y_pred, label=f"Predicted ({model_name})", color="red")
+                    axes[i].set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+                    axes[i].set_xlabel("Depth")
+                    axes[i].set_ylabel("Values")
+                    axes[i].grid()
+                    axes[i].legend()
+
+            plt.tight_layout()
+            st.pyplot(fig)
     else:
         st.warning("⚠ No data or logs selected!")
-
-# Show predictions
-def show_predictions():
-    if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
-        st.warning("⚠ No cleaned data available!")
-        return
-
-    if "input_logs" not in st.session_state or "target_log" not in st.session_state:
-        st.warning("⚠ No logs selected!")
-        return
-
-    input_logs = st.session_state["input_logs"]
-    target_log = st.session_state["target_log"]
-
-    if st.session_state["cleaned_dfs"] and input_logs and target_log and st.session_state["models"]:
-        combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-        X = st.session_state["updated_X"].dropna() if st.session_state["updated_X"] is not None else combined_df[input_logs].dropna()
-        y = combined_df[target_log].dropna()
-
-        common_index = X.index.intersection(y.index)
-        X = X.loc[common_index]
-        y = y.loc[common_index]
-
-        X_scaled = StandardScaler().fit_transform(X)
-
-        num_models = len(st.session_state["models"])
-        fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
-
-        if num_models == 1:
-            axes = [axes]
-
-        for i, (model_name, model) in enumerate(st.session_state["models"].items()):
-            if model is not None:
-                y_pred = model.predict(X_scaled)
-                r2 = r2_score(y, y_pred)
-                rmse = mean_squared_error(y, y_pred, squared=False)
-
-                axes[i].plot(y.index, y.values, label="Actual", color="black")
-                axes[i].plot(y.index, y_pred, label=f"Predicted ({model_name})", color="red")
-                axes[i].set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
-                axes[i].set_xlabel("Depth")
-                axes[i].set_ylabel("Values")
-                axes[i].grid()
-                axes[i].legend()
-
-        plt.tight_layout()
-        st.pyplot(fig)
-    else:
-        st.warning("⚠ No data or models trained!")
-
+        
 # Load and predict new data
 def load_and_predict_new_data():
     uploaded_file = st.file_uploader("Upload new LAS or CSV file", type=["las", "csv"])
