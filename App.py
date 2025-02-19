@@ -227,15 +227,15 @@ def plot_histograms():
     if input_logs and target_log:
         st.write("### Histograms")
         combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-        fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(25, 5))
+        fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(25, 6))
 
         for i, col in enumerate(input_logs):
             if col in combined_df.columns:
-                axes[i].hist(combined_df[col].dropna(), bins=30, edgecolor='black', alpha=0.7)
+                axes[i].hist(combined_df[col].dropna(), bins=30, edgecolor='black', alpha=0.9)
                 axes[i].set_title(col)
 
         if target_log in combined_df.columns:
-            axes[-1].hist(combined_df[target_log].dropna(), bins=30, edgecolor='black', alpha=0.7, color='red')
+            axes[-1].hist(combined_df[target_log].dropna(), bins=30, edgecolor='black', alpha=0.9, color='red')
             axes[-1].set_title(target_log)
 
         plt.tight_layout()
