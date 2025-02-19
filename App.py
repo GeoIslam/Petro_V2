@@ -285,7 +285,6 @@ def train_models_and_show_predictions():
                     search.fit(X_train, y_train)
                     model = search.best_estimator_
                     st.success(f"Best hyperparameters: {search.best_params_}")
-
                 else:
                     model.fit(X_train, y_train)
 
@@ -293,19 +292,31 @@ def train_models_and_show_predictions():
                 st.success(f"{model_name} trained successfully!")
 
                 # Show Predictions
-                y_pred = model.predict(X_scaled)
-                r2 = r2_score(y, y_pred)
-                rmse = np.sqrt(mean_squared_error(y, y_pred))
+                y_pred_train = model.predict(X_train)
+                y_pred_test = model.predict(X_test)
 
+                # Calculate Metrics
+                metrics_data = {
+                    "Dataset": ["Training", "Testing"],
+                    "R²": [r2_score(y_train, y_pred_train), r2_score(y_test, y_pred_test)],
+                    "RMSE": [np.sqrt(mean_squared_error(y_train, y_pred_train)),
+                             np.sqrt(mean_squared_error(y_test, y_pred_test))]
+                }
+                metrics_df = pd.DataFrame(metrics_data)
+
+                # Plot Predictions
                 fig, ax = plt.subplots(figsize=(8, 5))
-                ax.plot(y.index, y.values, label="Actual", color="black")
-                ax.plot(y.index, y_pred, label="Predicted", color="red")
-                ax.set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+                ax.plot(y_test.index, y_test.values, label="Actual", color="black")
+                ax.plot(y_test.index, y_pred_test, label="Predicted", color="red")
+                ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
                 ax.set_xlabel("Depth")
                 ax.set_ylabel("Values")
                 ax.legend()
                 ax.grid()
                 st.pyplot(fig)
+
+                # Show Metrics Table
+                st.table(metrics_df)
 
                 # Save Model
                 if st.button("Save Model"):
@@ -314,7 +325,7 @@ def train_models_and_show_predictions():
                     st.success(f"{model_name} model saved successfully!")
     else:
         st.warning("⚠ No data or logs selected!")
-        
+
 # Load and predict new data
 def load_and_predict_new_data():
     uploaded_file = st.file_uploader("Upload new LAS or CSV file", type=["las", "csv"])
