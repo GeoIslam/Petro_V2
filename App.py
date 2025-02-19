@@ -348,6 +348,7 @@ def load_and_predict_new_data():
     uploaded_file = st.file_uploader("Upload new LAS or CSV file", type=["las", "csv"])
     if uploaded_file:
         if uploaded_file.name.endswith(".las"):
+            # Read the file in binary mode
             las = lasio.read(uploaded_file)
             new_df = las.df()
         elif uploaded_file.name.endswith(".csv"):
@@ -408,7 +409,7 @@ def load_and_predict_new_data():
                         st.success("Results exported successfully!")
     else:
         st.warning("No file selected!")
-
+        
 # Main UI
 def main():
     st.title("Petrophysical Property Predictor")
