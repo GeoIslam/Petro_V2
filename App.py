@@ -327,9 +327,18 @@ def train_models_and_show_predictions():
 
                 # Save Model
                 if st.button("Save Model"):
-                    with open(f"{model_name}_model.pkl", "wb") as file:
-                        pickle.dump(model, file)
-                    st.success(f"{model_name} model saved successfully!")
+                    try:
+                        model_path = f"{model_name}_model.pkl"
+                        with open(model_path, "wb") as file:
+                            pickle.dump(model, file)
+                        st.session_state["model_saved"] = True
+                        st.session_state["model_path"] = model_path
+                    except Exception as e:
+                        st.error(f"Error saving model: {e}")
+
+                # Display success message if model is saved
+                if st.session_state.get("model_saved"):
+                    st.success(f"Model saved successfully at: {st.session_state['model_path']}")
     else:
         st.warning("⚠ No data or logs selected!")
 
