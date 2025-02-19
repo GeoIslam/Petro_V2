@@ -376,16 +376,34 @@ def train_models_and_show_predictions():
                 metrics_df = pd.DataFrame(metrics_data)
 
                 # Plot Predictions
-                fig, ax = plt.subplots(figsize=(20, 5))
-                ax.plot(y.index, y.values, label="Actual", color="black", alpha=0.7)
-                ax.plot(y.index, y_pred, label="Predicted", color="red", alpha=0.7)
-                ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
-                ax.set_xlabel("Depth")
-                ax.set_ylabel("Values")
-                ax.legend()
-                ax.grid()
-                st.pyplot(fig)
-
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=y.index,
+                    y=y.values,
+                    mode='lines',
+                    name='Actual',
+                    line=dict(color='black', width=2, opacity=0.7)
+                ))
+                fig.add_trace(go.Scatter(
+                    x=y.index,
+                    y=y_pred,
+                    mode='lines',
+                    name='Predicted',
+                    line=dict(color='red', width=2, opacity=0.7)
+                ))
+                # Update layout
+                fig.update_layout(
+                    title=f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})",
+                    xaxis_title="Depth",
+                    yaxis_title="Values",
+                    legend_title="Legend",
+                    hovermode="x unified",
+                    template="plotly_white"
+                )
+                
+                # Display the plot in Streamlit
+                st.plotly_chart(fig, use_container_width=True)
+                
                 # Show Metrics Table
                 col1, col2 = st.columns(2)
                 col1.metric("R² (Training)", f"{metrics_data['R²'][0]:.2f}")
