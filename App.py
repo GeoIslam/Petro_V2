@@ -294,7 +294,8 @@ def train_models_and_show_predictions():
                 # Show Predictions
                 y_pred_train = model.predict(X_train)
                 y_pred_test = model.predict(X_test)
-
+                y_pred = model.predict(X_scaled)
+                
                 # Calculate Metrics
                 metrics_data = {
                     "Dataset": ["Training", "Testing"],
@@ -307,7 +308,7 @@ def train_models_and_show_predictions():
                 # Plot Predictions
                 fig, ax = plt.subplots(figsize=(8, 5))
                 ax.plot(y.index, y.values, label="Actual", color="black")
-                ax.plot(y.index, y_pred_test, label="Predicted", color="red")
+                ax.plot(y.index, y_pred, label="Predicted", color="red")
                 ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
                 ax.set_xlabel("Depth")
                 ax.set_ylabel("Values")
