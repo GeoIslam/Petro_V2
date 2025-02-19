@@ -317,13 +317,7 @@ def train_models_and_show_predictions():
                 st.pyplot(fig)
 
                 # Show Metrics Table
-                col1, col2 = st.columns(2)
-                col1.metric("R² (Training)", f"{metrics_data['R²'][0]:.2f}")
-                col2.metric("RMSE (Training)", f"{metrics_data['RMSE'][0]:.2f}")
-
-                col3, col4 = st.columns(2)
-                col3.metric("R² (Testing)", f"{metrics_data['R²'][1]:.2f}")
-                col4.metric("RMSE (Testing)", f"{metrics_data['RMSE'][1]:.2f}")
+                st.bar_chart(metrics_df.set_index("Dataset")[["R²", "RMSE"]])
 
                 # Save Model
                 if st.button("Save Model"):
