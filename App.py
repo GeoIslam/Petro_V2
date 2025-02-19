@@ -103,9 +103,10 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fill='tonexty',
-                        fillcolor='rgba(200,200,200,0.5)',  # Light gray default fill
-                    ),
+                        fillgradient=dict(
+                            type="horizontal",
+                            colorscale=[(0.0, "darkblue"), (0.5, "royalblue"), (1.0, "cyan")],
+                        ),
                     row=1, 
                     col=j+1
                 )
