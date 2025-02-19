@@ -350,7 +350,6 @@ def load_and_predict_new_data():
         if uploaded_file.name.endswith(".las"):
             las = lasio.read(uploaded_file)
             new_df = las.df()
-            new_df.reset_index(inplace=True)
         elif uploaded_file.name.endswith(".csv"):
             new_df = pd.read_csv(uploaded_file)
 
