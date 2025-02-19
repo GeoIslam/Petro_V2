@@ -292,13 +292,13 @@ def train_models_and_show_predictions():
                 st.success(f"{model_name} trained successfully!")
 
                 # Show Predictions
-                y_pred = model.predict(X_test)
-                r2 = r2_score(y_test, y_pred)
-                rmse = mean_squared_error(y_test, y_pred, squared=False)
+                y_pred = model.predict(X)
+                r2 = r2_score(y, y_pred)
+                rmse = np.sqrt(mean_squared_error(y, y_pred))
 
                 fig, ax = plt.subplots(figsize=(8, 5))
-                ax.plot(y_test.index, y_test.values, label="Actual", color="black")
-                ax.plot(y_test.index, y_pred, label="Predicted", color="red")
+                ax.plot(y.index, y.values, label="Actual", color="black")
+                ax.plot(y.index, y_pred, label="Predicted", color="red")
                 ax.set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
                 ax.set_xlabel("Depth")
                 ax.set_ylabel("Values")
