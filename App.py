@@ -91,12 +91,15 @@ def show_input_logs():
                 subplot_titles=df.columns
             )
 
-            # Generate a grayscale color palette for filling
-            grayscale_colors = px.colors.sequential.Greys
-
             for j, col in enumerate(df.columns):
-                min_val = df[col].min()  # Get the minimum log value for baseline fill
-                
+                min_val = df[col].min()
+                max_val = df[col].max()
+
+                # Normalize log values between 0 and 1 for grayscale intensity
+                normalized_values = (df[col] - min_val) / (max_val - min_val)
+                grayscale_colors = [f'rgba(0,0,0,{v})' for v in normalized_values]
+
+                # Add each log with variable fill based on its values
                 fig.add_trace(
                     go.Scatter(
                         x=df[col], 
@@ -104,8 +107,23 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fill='tonextx',  # Fill between curve and minimum value
-                        fillcolor=grayscale_colors[(j * 2) % len(grayscale_colors)],
+                        fill='tonextx',
+                        fillcolor='rgba(200,200,200,0.5)',  # Light gray default fill
+                    ),
+                    row=1, 
+                    col=j+1
+                )
+
+                # Add filled area with varying transparency
+                fig.add_trace(
+                    go.Scatter(
+                        x=[min_val] * len(df.index), 
+                        y=df.index,
+                        mode='lines',
+                        line=dict(color='rgba(0,0,0,0)'),  # Invisible line
+                        fill='tonextx',
+                        fillcolor='rgba(200,200,200,0.5)',
+                        showlegend=False
                     ),
                     row=1, 
                     col=j+1
@@ -131,7 +149,7 @@ def show_input_logs():
             # General layout updates
             fig.update_yaxes(title="Depth (m)", autorange="reversed")
             fig.update_layout(
-                height=1000,  # Increase height
+                height=1000,  # Increase height for deep wells
                 width=300 * len(df.columns),  # Adjust width dynamically
                 title=f"Well {i+1} - Log Visualization",
                 template="plotly_white",
