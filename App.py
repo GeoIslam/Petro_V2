@@ -260,8 +260,7 @@ def train_models_and_show_predictions():
             param_grid = {
                 "n_estimators": range(50, 500, 50),
                 "max_depth": range(1, 20),
-                "learning_rate": np.linspace(0.01, 0.3, 10)
-            }
+                "learning_rate": np.linspace(0.01, 0.3, 10)}
         elif model_name == "SVR":
             kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
             C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
