@@ -107,7 +107,7 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fill='tonextx',
+                        fill='tonexty',
                         fillcolor='rgba(200,200,200,0.5)',  # Light gray default fill
                     ),
                     row=1, 
@@ -121,7 +121,7 @@ def show_input_logs():
                         y=df.index,
                         mode='lines',
                         line=dict(color='rgba(0,0,0,0)'),  # Invisible line
-                        fill='tonextx',
+                        fill='tonexty',
                         fillcolor='rgba(200,200,200,0.5)',
                         showlegend=False
                     ),
