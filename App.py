@@ -3,6 +3,7 @@ import io
 import lasio
 import pandas as pd
 import numpy as np
+import plotly.graph_objs as go
 import xgboost as xgb
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -73,20 +74,40 @@ def load_file():
         except Exception as e:
             st.error(f"Error loading {uploaded_file.name}: {e}")
 
-# Show input logs
+# Show input logs with interactive and colorful plots
 def show_input_logs():
     if st.session_state["dfs"]:
         for i, df in enumerate(st.session_state["dfs"]):
-            st.write(f"Well {i+1} Logs")
-            fig, axes = plt.subplots(nrows=1, ncols=len(df.columns), figsize=(15, 6))
+            st.subheader(f"Well {i+1} Logs")
+            
+            # Create a plotly figure with subplots
+            fig = go.Figure()
+
+            # Generate a color palette for columns
+            colors = px.colors.qualitative.Plotly
+
             for j, col in enumerate(df.columns):
-                axes[j].plot(df[col], df.index, label=col)
-                axes[j].set_ylim(df.index.max(), df.index.min())  # Invert depth axis
-                axes[j].set_xlabel(col)
-                axes[j].set_ylabel("Depth")
-                axes[j].grid()
-            plt.tight_layout()
-            st.pyplot(fig)
+                fig.add_trace(go.Scatter(
+                    x=df[col], 
+                    y=df.index,
+                    mode='lines',
+                    name=col,
+                    line=dict(color=colors[j % len(colors)]),  # Cycle through colors
+                ))
+
+            # Update layout for better visualization
+            fig.update_yaxes(autorange="reversed", title="Depth")
+            fig.update_xaxes(title="Log Values")
+            fig.update_layout(
+                height=600,
+                width=800,
+                title=f"Well {i+1} - Log Visualization",
+                template="plotly_dark",  # You can use "plotly", "seaborn", "ggplot2", etc.
+                hovermode="x unified"
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+            
     else:
         st.warning("No data loaded!")
 
