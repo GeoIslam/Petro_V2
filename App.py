@@ -222,7 +222,6 @@ def plot_correlation_matrix():
     else:
         st.warning("⚠ No logs selected!")
 
-# Train Models and Show Predictions
 def train_and_show_predictions():
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
@@ -356,6 +355,15 @@ def train_and_show_predictions():
             for i, (model_name, model) in enumerate(st.session_state["models"].items()):
                 if model is not None:
                     y_pred = model.predict(X_scaled)
+
+                    # Debugging: Check shapes and values
+                    print(f"Shape of y: {y.shape}")
+                    print(f"Shape of y_pred: {y_pred.shape}")
+                    print(f"NaN in y: {np.isnan(y).sum()}")
+                    print(f"NaN in y_pred: {np.isnan(y_pred).sum()}")
+                    print(f"Inf in y: {np.isinf(y).sum()}")
+                    print(f"Inf in y_pred: {np.isinf(y_pred).sum()}")
+
                     r2 = r2_score(y, y_pred)
                     rmse = mean_squared_error(y, y_pred, squared=False)
 
