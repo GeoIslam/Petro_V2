@@ -81,8 +81,8 @@ def show_input_logs():
     if st.session_state["dfs"]:
         for i, df in enumerate(st.session_state["dfs"]):
             st.subheader(f"Well {i+1} Logs")
-            
-            # Create subplots with a separate track for each log
+
+            # Create subplots with separate tracks for each log
             fig = make_subplots(
                 rows=1, 
                 cols=len(df.columns), 
@@ -91,10 +91,12 @@ def show_input_logs():
                 subplot_titles=df.columns
             )
 
-            # Generate a grayscale color palette for filled areas
+            # Generate a grayscale color palette for filling
             grayscale_colors = px.colors.sequential.Greys
-            
+
             for j, col in enumerate(df.columns):
+                min_val = df[col].min()  # Get the minimum log value for baseline fill
+                
                 fig.add_trace(
                     go.Scatter(
                         x=df[col], 
@@ -102,14 +104,14 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fill='tonextx',
-                        fillcolor=grayscale_colors[(j * 2) % len(grayscale_colors)]
+                        fill='tonextx',  # Fill between curve and minimum value
+                        fillcolor=grayscale_colors[(j * 2) % len(grayscale_colors)],
                     ),
                     row=1, 
                     col=j+1
                 )
 
-                # Update each x-axis individually with fine grid
+                # Update each x-axis with fine grid
                 fig.update_xaxes(
                     title_text=col, 
                     row=1, 
@@ -119,7 +121,7 @@ def show_input_logs():
                     gridcolor='gray'
                 )
                 
-                # Update y-axis for fine grid as well
+                # Update y-axis with fine grid
                 fig.update_yaxes(
                     showgrid=True, 
                     gridwidth=0.5, 
@@ -129,15 +131,15 @@ def show_input_logs():
             # General layout updates
             fig.update_yaxes(title="Depth (m)", autorange="reversed")
             fig.update_layout(
-                height=1000,  # Make the plot taller
-                width=300 * len(df.columns),  # Dynamic width
+                height=1000,  # Increase height
+                width=300 * len(df.columns),  # Adjust width dynamically
                 title=f"Well {i+1} - Log Visualization",
                 template="plotly_white",
                 hovermode="y unified"
             )
 
             st.plotly_chart(fig, use_container_width=True)
-            
+
     else:
         st.warning("No data loaded!")
 
