@@ -12,6 +12,7 @@ from sklearn.svm import SVR
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 import seaborn as sns
