@@ -376,7 +376,7 @@ def train_models_and_show_predictions():
                 metrics_df = pd.DataFrame(metrics_data)
 
                 # Plot Predictions
-                fig, ax = plt.subplots(figsize=(12, 5))
+                fig, ax = plt.subplots(figsize=(15, 5))
                 ax.plot(y.index, y.values, label="Actual", color="black")
                 ax.plot(y.index, y_pred, label="Predicted", color="red")
                 ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
@@ -451,7 +451,7 @@ def load_and_predict_new_data():
             st.pyplot(fig)
 
             st.write("Predicted Log")
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(15, 5))
             for model_name in pred_df.columns:
                 if model_name != "Depth":
                     ax.plot(pred_df["Depth"], pred_df[model_name], label=model_name)
