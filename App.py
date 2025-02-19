@@ -306,8 +306,8 @@ def train_models_and_show_predictions():
 
                 # Plot Predictions
                 fig, ax = plt.subplots(figsize=(8, 5))
-                ax.plot(y_test.index, y_test.values, label="Actual", color="black")
-                ax.plot(y_test.index, y_pred_test, label="Predicted", color="red")
+                ax.plot(y.index, y.values, label="Actual", color="black")
+                ax.plot(y.index, y_pred_test, label="Predicted", color="red")
                 ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
                 ax.set_xlabel("Depth")
                 ax.set_ylabel("Values")
