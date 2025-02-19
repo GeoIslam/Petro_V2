@@ -376,15 +376,46 @@ def train_models_and_show_predictions():
                 metrics_df = pd.DataFrame(metrics_data)
 
                 # Plot Predictions
-                fig, ax = plt.subplots(figsize=(20, 5))
-                ax.plot(y.index, y.values, label="Actual", color="black")
-                ax.plot(y.index, y_pred, label="Predicted", color="red")
-                ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
-                ax.set_xlabel("Depth")
-                ax.set_ylabel("Values")
-                ax.legend()
-                ax.grid()
-                st.pyplot(fig)
+                def plot_predictions(y, y_pred, model_name, metrics_data):
+                    fig = go.Figure()
+
+                    # Actual values trace
+                    fig.add_trace(go.Scatter(
+                        x=y.index, 
+                        y=y.values, 
+                        mode='lines', 
+                        name='Actual', 
+                        line=dict(color='black')
+                    ))
+
+                    # Predicted values trace
+                    fig.add_trace(go.Scatter(
+                        x=y.index, 
+                        y=y_pred, 
+                        mode='lines', 
+                        name='Predicted', 
+                        line=dict(color='red')
+                    ))
+
+                    # Layout customization
+                    fig.update_layout(
+                        title=f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})",
+                        xaxis_title="Depth",
+                        yaxis_title="Values",
+                        template="plotly_white",
+                        height=400,
+                        width=1000,
+                        legend=dict(title="Legend"),
+                        hovermode="x unified"
+                    )
+                
+                    # Adding grid lines
+                    fig.update_xaxes(showgrid=True, gridwidth=0.5, gridcolor='lightgray')
+                    fig.update_yaxes(showgrid=True, gridwidth=0.5, gridcolor='lightgray')
+                
+                    # Display in Streamlit
+                    st.plotly_chart(fig, use_container_width=True)
+
 
                 # Show Metrics Table
                 col1, col2 = st.columns(2)
