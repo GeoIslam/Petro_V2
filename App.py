@@ -222,7 +222,8 @@ def plot_correlation_matrix():
     else:
         st.warning("⚠ No logs selected!")
 
-def train_and_show_predictions():
+# Train Models and Show Predictions
+def train_models_and_show_predictions():
     if "cleaned_dfs" not in st.session_state or not st.session_state["cleaned_dfs"]:
         st.warning("⚠ No cleaned data available!")
         return
@@ -237,82 +238,36 @@ def train_and_show_predictions():
     if st.session_state["cleaned_dfs"] and input_logs and target_log:
         model_name = st.selectbox("Choose Model", list(st.session_state["models"].keys()))
 
-        # Hyperparameter selection
+        # Set Hyperparameters
+        param_grid = {}
         if model_name == "Linear Regression":
             model = LinearRegression()
         elif model_name == "Random Forest":
-            if st.checkbox("Run Random Search for Hyperparameters"):
-                param_dist = {
-                    "n_estimators": randint(10, 200),
-                    "max_depth": randint(1, 20),
-                }
-                model = RandomizedSearchCV(
-                    RandomForestRegressor(random_state=42),
-                    param_distributions=param_dist,
-                    n_iter=10,
-                    cv=3,
-                    random_state=42,
-                )
-            else:
-                n_estimators = st.slider("Number of Trees", 10, 200, 100)
-                max_depth = st.slider("Max Depth", 1, 20, 10)
-                model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+            n_estimators = st.slider("Number of Trees", 10, 200, 100)
+            max_depth = st.slider("Max Depth", 1, 20, 10)
+            model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+            param_grid = {"n_estimators": range(10, 200, 10), "max_depth": range(1, 20)}
         elif model_name == "Neural Network":
-            if st.checkbox("Run Random Search for Hyperparameters"):
-                param_dist = {
-                    "hidden_layer_sizes": [(randint(10, 100)), (randint(10, 100))],
-                    "max_iter": randint(100, 1000),
-                }
-                model = RandomizedSearchCV(
-                    MLPRegressor(random_state=42),
-                    param_distributions=param_dist,
-                    n_iter=10,
-                    cv=3,
-                    random_state=42,
-                )
-            else:
-                hidden_layer_sizes = st.text_input("Hidden Layer Sizes (e.g., 64,64)", "64,64")
-                max_iter = st.slider("Max Iterations", 100, 1000, 100)
-                model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
+            hidden_layer_sizes = st.text_input("Hidden Layer Sizes (e.g., 64,64)", "64,64")
+            max_iter = st.slider("Max Iterations", 100, 1000, 100)
+            model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
+            param_grid = {"hidden_layer_sizes": [(64,), (128,), (64, 64), (128, 128)], "max_iter": range(100, 1000, 100)}
         elif model_name == "SVR":
-            if st.checkbox("Run Random Search for Hyperparameters"):
-                param_dist = {
-                    "kernel": ["rbf", "linear"],
-                    "C": uniform(0.1, 10.0),
-                    "gamma": ["scale", "auto"],
-                }
-                model = RandomizedSearchCV(
-                    SVR(),
-                    param_distributions=param_dist,
-                    n_iter=10,
-                    cv=3,
-                    random_state=42,
-                )
-            else:
-                kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
-                C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
-                gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
-                model = SVR(kernel=kernel, C=C, gamma=gamma)
+            kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
+            C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
+            gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
+            model = SVR(kernel=kernel, C=C, gamma=gamma)
+            param_grid = {"C": np.linspace(0.1, 10, 10), "gamma": ["scale", "auto"]}
         elif model_name == "Gaussian Process":
             kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
             model = GaussianProcessRegressor(kernel=kernel, random_state=42)
         elif model_name == "KNN":
-            if st.checkbox("Run Random Search for Hyperparameters"):
-                param_dist = {
-                    "n_neighbors": randint(1, 20),
-                }
-                model = RandomizedSearchCV(
-                    KNeighborsRegressor(),
-                    param_distributions=param_dist,
-                    n_iter=10,
-                    cv=3,
-                    random_state=42,
-                )
-            else:
-                n_neighbors = st.slider("Number of Neighbors", 1, 20, 5)
-                model = KNeighborsRegressor(n_neighbors=n_neighbors)
+            n_neighbors = st.slider("Number of Neighbors", 1, 20, 5)
+            model = KNeighborsRegressor(n_neighbors=n_neighbors)
+            param_grid = {"n_neighbors": range(1, 20)}
 
-        # Train the model
+        use_random_search = st.checkbox("Use RandomizedSearchCV for Hyperparameter Tuning")
+
         if st.button("Train Model"):
             with st.spinner("Training in progress..."):
                 combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
@@ -324,59 +279,38 @@ def train_and_show_predictions():
                 X_train = scaler.fit_transform(X_train)
                 X_test = scaler.transform(X_test)
 
-                model.fit(X_train, y_train)
+                if use_random_search and param_grid:
+                    search = RandomizedSearchCV(model, param_grid, n_iter=10, cv=3, random_state=42)
+                    search.fit(X_train, y_train)
+                    model = search.best_estimator_
+                    st.success(f"Best hyperparameters: {search.best_params_}")
+
+                else:
+                    model.fit(X_train, y_train)
+
                 st.session_state["models"][model_name] = model
                 st.success(f"{model_name} trained successfully!")
 
-                # Save model button
+                # Show Predictions
+                y_pred = model.predict(X_test)
+                r2 = r2_score(y_test, y_pred)
+                rmse = mean_squared_error(y_test, y_pred, squared=False)
+
+                fig, ax = plt.subplots(figsize=(8, 5))
+                ax.plot(y_test.index, y_test.values, label="Actual", color="black")
+                ax.plot(y_test.index, y_pred, label="Predicted", color="red")
+                ax.set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
+                ax.set_xlabel("Depth")
+                ax.set_ylabel("Values")
+                ax.legend()
+                ax.grid()
+                st.pyplot(fig)
+
+                # Save Model
                 if st.button("Save Model"):
-                    with open(f"{model_name}_model.pkl", "wb") as f:
-                        pickle.dump(model, f)
-                    st.success(f"{model_name} saved successfully!")
-
-        # Show predictions
-        if st.session_state["models"]:
-            combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-            X = st.session_state["updated_X"].dropna() if st.session_state["updated_X"] is not None else combined_df[input_logs].dropna()
-            y = combined_df[target_log].dropna()
-
-            common_index = X.index.intersection(y.index)
-            X = X.loc[common_index]
-            y = y.loc[common_index]
-
-            X_scaled = StandardScaler().fit_transform(X)
-
-            num_models = len(st.session_state["models"])
-            fig, axes = plt.subplots(nrows=1, ncols=num_models, figsize=(15, 6))
-
-            if num_models == 1:
-                axes = [axes]
-
-            for i, (model_name, model) in enumerate(st.session_state["models"].items()):
-                if model is not None:
-                    y_pred = model.predict(X_scaled)
-
-                    # Debugging: Check shapes and values
-                    print(f"Shape of y: {y.shape}")
-                    print(f"Shape of y_pred: {y_pred.shape}")
-                    print(f"NaN in y: {np.isnan(y).sum()}")
-                    print(f"NaN in y_pred: {np.isnan(y_pred).sum()}")
-                    print(f"Inf in y: {np.isinf(y).sum()}")
-                    print(f"Inf in y_pred: {np.isinf(y_pred).sum()}")
-
-                    r2 = r2_score(y, y_pred)
-                    rmse = mean_squared_error(y, y_pred, squared=False)
-
-                    axes[i].plot(y.index, y.values, label="Actual", color="black")
-                    axes[i].plot(y.index, y_pred, label=f"Predicted ({model_name})", color="red")
-                    axes[i].set_title(f"{model_name} (R²: {r2:.2f}, RMSE: {rmse:.2f})")
-                    axes[i].set_xlabel("Depth")
-                    axes[i].set_ylabel("Values")
-                    axes[i].grid()
-                    axes[i].legend()
-
-            plt.tight_layout()
-            st.pyplot(fig)
+                    with open(f"{model_name}_model.pkl", "wb") as file:
+                        pickle.dump(model, file)
+                    st.success(f"{model_name} model saved successfully!")
     else:
         st.warning("⚠ No data or logs selected!")
         
@@ -467,7 +401,7 @@ def main():
     elif choice == "Plot Correlation Matrix":
         plot_correlation_matrix()
     elif choice == "Train Models and Show Predictions":
-        train_and_show_predictions()
+        train_models_and_show_predictions()
     elif choice == "Load & Predict New Data":
         load_and_predict_new_data()
 
