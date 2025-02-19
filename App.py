@@ -252,15 +252,16 @@ def train_models_and_show_predictions():
             max_iter = st.slider("Max Iterations", 100, 1000, 100)
             model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
             param_grid = {"hidden_layer_sizes": [(64,), (128,), (64, 64), (128, 128)], "max_iter": range(100, 1000, 100)}
-       elif model_name == "XGBoost":
-            n_estimators = st.slider("Number of Trees", 50, 500, 100)
-            max_depth = st.slider("Max Depth", 1, 20, 6)
+        elif model_name == "XGBoost":
             learning_rate = st.slider("Learning Rate", 0.01, 0.3, 0.1)
-            model = XGBRegressor(n_estimators=n_estimators, max_depth=max_depth, learning_rate=learning_rate, random_state=42)
+            n_estimators = st.slider("Number of Trees", 10, 200, 100)
+            max_depth = st.slider("Max Depth", 1, 20, 6)
+            model = xgb.XGBRegressor(learning_rate=learning_rate, n_estimators=n_estimators, max_depth=max_depth, random_state=42)
             param_grid = {
-                "n_estimators": range(50, 500, 50),
-                "max_depth": range(1, 20),
-                "learning_rate": np.linspace(0.01, 0.3, 10)}
+                "learning_rate": np.linspace(0.01, 0.3, 10),
+                "n_estimators": range(10, 200, 10),
+                "max_depth": range(1, 20)
+            }
         elif model_name == "SVR":
             kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
             C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
