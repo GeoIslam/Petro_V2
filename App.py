@@ -95,10 +95,6 @@ def show_input_logs():
                 min_val = df[col].min()
                 max_val = df[col].max()
 
-                # Normalize log values between 0 and 1 for grayscale intensity
-                normalized_values = (df[col] - min_val) / (max_val - min_val)
-                grayscale_colors = [f'rgba(0,0,0,{v})' for v in normalized_values]
-
                 # Add each log with variable fill based on its values
                 fig.add_trace(
                     go.Scatter(
