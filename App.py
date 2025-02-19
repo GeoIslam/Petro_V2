@@ -376,9 +376,9 @@ def train_models_and_show_predictions():
                 metrics_df = pd.DataFrame(metrics_data)
 
                 # Plot Predictions
-                fig, ax = plt.subplots()
-                ax.plot(y.index, y.values, label="Actual", color="black")
-                ax.plot(y.index, y_pred, label="Predicted", color="red")
+                fig, ax = plt.subplots(figsize=(20, 5))
+                ax.plot(y.index, y.values, label="Actual", color="black", alpha=0.7)
+                ax.plot(y.index, y_pred, label="Predicted", color="red", alpha=0.7)
                 ax.set_title(f"{model_name} (R²: {metrics_data['R²'][1]:.2f}, RMSE: {metrics_data['RMSE'][1]:.2f})")
                 ax.set_xlabel("Depth")
                 ax.set_ylabel("Values")
