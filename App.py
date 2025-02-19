@@ -8,9 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
+from xgboost import XGBRegressor
 from sklearn.svm import SVR
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
@@ -35,8 +34,8 @@ if "models" not in st.session_state:
         "Linear Regression": None,
         "Random Forest": None,
         "Neural Network": None,
+        "XGBoost": None,
         "SVR": None,
-        "Gaussian Process": None,
         "KNN": None
     }
 if "updated_X" not in st.session_state:
@@ -253,15 +252,22 @@ def train_models_and_show_predictions():
             max_iter = st.slider("Max Iterations", 100, 1000, 100)
             model = MLPRegressor(hidden_layer_sizes=tuple(map(int, hidden_layer_sizes.split(','))), max_iter=max_iter, random_state=42)
             param_grid = {"hidden_layer_sizes": [(64,), (128,), (64, 64), (128, 128)], "max_iter": range(100, 1000, 100)}
+       elif model_name == "XGBoost":
+            n_estimators = st.slider("Number of Trees", 50, 500, 100)
+            max_depth = st.slider("Max Depth", 1, 20, 6)
+            learning_rate = st.slider("Learning Rate", 0.01, 0.3, 0.1)
+            model = XGBRegressor(n_estimators=n_estimators, max_depth=max_depth, learning_rate=learning_rate, random_state=42)
+            param_grid = {
+                "n_estimators": range(50, 500, 50),
+                "max_depth": range(1, 20),
+                "learning_rate": np.linspace(0.01, 0.3, 10)
+            }
         elif model_name == "SVR":
             kernel = st.text_input("Kernel (e.g., 'rbf', 'linear')", "rbf")
             C = st.slider("C (Regularization parameter)", 0.1, 10.0, 1.0)
             gamma = st.text_input("Gamma (Kernel coefficient)", "scale")
             model = SVR(kernel=kernel, C=C, gamma=gamma)
             param_grid = {"C": np.linspace(0.1, 10, 10), "gamma": ["scale", "auto"]}
-        elif model_name == "Gaussian Process":
-            kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
-            model = GaussianProcessRegressor(kernel=kernel, random_state=42)
         elif model_name == "KNN":
             n_neighbors = st.slider("Number of Neighbors", 1, 20, 5)
             model = KNeighborsRegressor(n_neighbors=n_neighbors)
