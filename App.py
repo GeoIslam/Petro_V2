@@ -278,7 +278,7 @@ def plot_correlation_matrix():
         plt.tight_layout()
         st.pyplot(fig)
 
-        fig_corr, ax_corr = plt.subplots(figsize=(4, 3))
+        fig_corr, ax_corr = plt.subplots(figsize=())
         sns.heatmap(corr_matrix, annot=True, ax=ax_corr, cmap="coolwarm")
         ax_corr.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
