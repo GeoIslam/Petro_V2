@@ -317,7 +317,7 @@ def train_models_and_show_predictions():
                 st.pyplot(fig)
 
                 # Show Metrics Table
-                st.dataframe(metrics_df)
+                st.json(metrics_data)
 
                 # Save Model
                 if st.button("Save Model"):
