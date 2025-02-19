@@ -278,6 +278,7 @@ def train_models_and_show_predictions():
                 scaler = StandardScaler()
                 X_train = scaler.fit_transform(X_train)
                 X_test = scaler.transform(X_test)
+                X_scaled = scaler.transform(X)
 
                 if use_random_search and param_grid:
                     search = RandomizedSearchCV(model, param_grid, n_iter=10, cv=3, random_state=42)
@@ -292,7 +293,7 @@ def train_models_and_show_predictions():
                 st.success(f"{model_name} trained successfully!")
 
                 # Show Predictions
-                y_pred = model.predict(X)
+                y_pred = model.predict(X_scaled)
                 r2 = r2_score(y, y_pred)
                 rmse = np.sqrt(mean_squared_error(y, y_pred))
 
