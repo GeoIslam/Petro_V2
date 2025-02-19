@@ -114,21 +114,6 @@ def show_input_logs():
                     col=j+1
                 )
 
-                # Add filled area with varying transparency
-                fig.add_trace(
-                    go.Scatter(
-                        x=[min_val] * len(df.index), 
-                        y=df.index,
-                        mode='lines',
-                        line=dict(color='rgba(0,0,0,0)'),  # Invisible line
-                        fill='tonexty',
-                        fillcolor='rgba(200,200,200,0.5)',
-                        showlegend=False
-                    ),
-                    row=1, 
-                    col=j+1
-                )
-
                 # Update each x-axis with fine grid
                 fig.update_xaxes(
                     title_text=col, 
