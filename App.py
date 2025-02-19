@@ -227,7 +227,7 @@ def plot_histograms():
     if input_logs and target_log:
         st.write("### Histograms")
         combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
-        fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(25, 6))
+        fig, axes = plt.subplots(nrows=1, ncols=len(input_logs) + 1, figsize=(25, 5))
 
         for i, col in enumerate(input_logs):
             if col in combined_df.columns:
