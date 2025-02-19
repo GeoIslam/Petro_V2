@@ -102,7 +102,7 @@ def show_input_logs():
                         mode='lines',
                         name=col,
                         line=dict(color='black', width=1),
-                        fill='tozerox',
+                        fill='tonextx',
                         fillcolor=grayscale_colors[(j * 2) % len(grayscale_colors)]
                     ),
                     row=1, 
