@@ -538,6 +538,3 @@ elif st.session_state.menu_choice == "Train Models and Show Predictions":
     train_models_and_show_predictions()
 elif st.session_state.menu_choice == "Load & Predict New Data":
     load_and_predict_new_data()
-    
-if __name__ == "__main__":
-    main()
