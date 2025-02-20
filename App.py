@@ -500,24 +500,23 @@ def load_and_predict_new_data():
 def main():
     st.title("Petrophysical Property Predictor")
 
-    menu = ["Load File", "Show Input Logs", "Fix Logs", "Select Training Data", "Plot Histograms", "Plot Correlation Matrix", "Train Models and Show Predictions", "Load & Predict New Data"]
-    choice = st.sidebar.selectbox("Menu", menu)
+    st.sidebar.title("Menu")
 
-    if choice == "Load File":
+    if st.sidebar.button("Load File"):
         load_file()
-    elif choice == "Show Input Logs":
+    elif st.sidebar.button("Show Input Logs"):
         show_input_logs()
-    elif choice == "Fix Logs":
+    elif st.sidebar.button("Fix Logs"):
         fix_logs()
-    elif choice == "Select Training Data":
+    elif st.sidebar.button("Select Training Data"):
         select_training_data()
-    elif choice == "Plot Histograms":
+    elif st.sidebar.button("Plot Histograms"):
         plot_histograms()
-    elif choice == "Plot Correlation Matrix":
+    elif st.sidebar.button("Plot Correlation Matrix"):
         plot_correlation_matrix()
-    elif choice == "Train Models and Show Predictions":
+    elif st.sidebar.button("Train Models and Show Predictions"):
         train_models_and_show_predictions()
-    elif choice == "Load & Predict New Data":
+    elif st.sidebar.button("Load & Predict New Data"):
         load_and_predict_new_data()
 
 if __name__ == "__main__":
