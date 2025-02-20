@@ -25,6 +25,28 @@ from sklearn.tree import plot_tree
 st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
 st.title("📊 Petrophysics Expert Robot")
 
+# Initialize session state for menu selection
+if "menu_choice" not in st.session_state:
+    st.session_state.menu_choice = "Load File"  # Default selection
+# Sidebar Buttons
+st.sidebar.title("Menu")
+if st.sidebar.button("Load File"):
+    st.session_state.menu_choice = "Load File"
+if st.sidebar.button("Show Input Logs"):
+    st.session_state.menu_choice = "Show Input Logs"
+if st.sidebar.button("Fix Logs"):
+    st.session_state.menu_choice = "Fix Logs"
+if st.sidebar.button("Select Training Data"):
+    st.session_state.menu_choice = "Select Training Data"
+if st.sidebar.button("Plot Histograms"):
+    st.session_state.menu_choice = "Plot Histograms"
+if st.sidebar.button("Plot Correlation Matrix"):
+    st.session_state.menu_choice = "Plot Correlation Matrix"
+if st.sidebar.button("Train Models and Show Predictions"):
+    st.session_state.menu_choice = "Train Models and Show Predictions"
+if st.sidebar.button("Load & Predict New Data"):
+    st.session_state.menu_choice = "Load & Predict New Data"
+    
 # Initialize session state for global variables
 if "dfs" not in st.session_state:
     st.session_state["dfs"] = []
@@ -497,27 +519,25 @@ def load_and_predict_new_data():
         st.warning("No file selected!")
         
 # Main UI
-def main():
-    st.title("Petrophysical Property Predictor")
+st.title("Petrophysical Property Predictor")
 
-    st.sidebar.title("Menu")
-
-    if st.sidebar.button("Load File"):
-        load_file()
-    elif st.sidebar.button("Show Input Logs"):
-        show_input_logs()
-    elif st.sidebar.button("Fix Logs"):
-        fix_logs()
-    elif st.sidebar.button("Select Training Data"):
-        select_training_data()
-    elif st.sidebar.button("Plot Histograms"):
-        plot_histograms()
-    elif st.sidebar.button("Plot Correlation Matrix"):
-        plot_correlation_matrix()
-    elif st.sidebar.button("Train Models and Show Predictions"):
-        train_models_and_show_predictions()
-    elif st.sidebar.button("Load & Predict New Data"):
-        load_and_predict_new_data()
-
+# Execute the selected function
+if st.session_state.menu_choice == "Load File":
+    load_file()
+elif st.session_state.menu_choice == "Show Input Logs":
+    show_input_logs()
+elif st.session_state.menu_choice == "Fix Logs":
+    fix_logs()
+elif st.session_state.menu_choice == "Select Training Data":
+    select_training_data()
+elif st.session_state.menu_choice == "Plot Histograms":
+    plot_histograms()
+elif st.session_state.menu_choice == "Plot Correlation Matrix":
+    plot_correlation_matrix()
+elif st.session_state.menu_choice == "Train Models and Show Predictions":
+    train_models_and_show_predictions()
+elif st.session_state.menu_choice == "Load & Predict New Data":
+    load_and_predict_new_data()
+    
 if __name__ == "__main__":
     main()
