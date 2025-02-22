@@ -519,7 +519,7 @@ def load_and_predict_new_data():
         st.warning("No file selected!")
         
 # Main UI
-st.title("Petrophysical Property Predictor")
+st.title("🤖 Petrophysical Property Predictor")
 
 # Execute the selected function
 if st.session_state.menu_choice == "Load File":
