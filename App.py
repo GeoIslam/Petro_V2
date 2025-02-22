@@ -77,13 +77,13 @@ if st.session_state.menu_choice == "Home":
     This application is designed to assist petrophysicists in analyzing log data, training machine learning models, 
     and making predictions. Follow these steps to use the application effectively:
     
-    1. **Load your dataset** using the `Load File` button.
-    2. **View and clean your logs** through `Show Input Logs` and `Fix Logs`.
-    3. **Select training data** by choosing logs relevant to your target.
-    4. **Visualize data** using histograms and correlation matrices.
-    5. **Train machine learning models** and evaluate their performance.
-    6. **Use trained models** to make predictions on new data.
-    
+    1. **Load Data:** Upload LAS or CSV files containing well log data using the `Load File` button.
+    2. **View & Clean Logs:** Fix missing values and outliers through `Show Input Logs` and `Fix Logs`.
+    3. **Select Training Data:** Choose the target log and input logs for model trainin.
+    4. **Visualize & Analyze Data:** using histograms and correlation matrices.
+    5. **Train Machine Learning Models:** Select ML models, tune hyperparameters, train and evaluate their performance.
+    6. **Use Trained Models & Predict New Data:** Load new well logs and make predictions using the trained models.
+
     Navigate through the menu on the left to access different functionalities.
     """)
 
