@@ -23,11 +23,13 @@ from sklearn.tree import plot_tree
 
 # Streamlit page configuration
 st.set_page_config(page_title="🤖 Petrophysics Expert Robot", layout="wide")
+st.title("🤖 Petrophysics Expert Robot")
 
-# Sidebar Menu
+# Initialize session state for menu selection
+if "menu_choice" not in st.session_state:
+    st.session_state.menu_choice = "Load File"  # Default selection
+# Sidebar Buttons
 st.sidebar.title("🏠 Menu")
-if st.sidebar.button("🏠 Home / Introduction"):
-    st.session_state.menu_choice = "Home"
 if st.sidebar.button("⬇️ Load File"):
     st.session_state.menu_choice = "Load File"
 if st.sidebar.button("📺 Show Input Logs"):
@@ -44,11 +46,7 @@ if st.sidebar.button("</> Train Models & Show Predictions"):
     st.session_state.menu_choice = "Train Models and Show Predictions"
 if st.sidebar.button("⌛ Load & Predict New Data"):
     st.session_state.menu_choice = "Load & Predict New Data"
-
-# Initialize session state for menu selection
-if "menu_choice" not in st.session_state:
-    st.session_state.menu_choice = "Home"  # Default to Home page
-
+    
 # Initialize session state for global variables
 if "dfs" not in st.session_state:
     st.session_state["dfs"] = []
@@ -69,24 +67,6 @@ if "updated_X" not in st.session_state:
     st.session_state["updated_X"] = None
 if "cleaned_dfs" not in st.session_state:
     st.session_state["cleaned_dfs"] = []
-
-# Home / Introduction Page
-if st.session_state.menu_choice == "Home":
-    st.title("Welcome to 🤖 Petrophysics Expert Robot")
-    st.write("""
-    This application is designed to assist petrophysicists in analyzing log data, training machine learning models, 
-    and making predictions. Follow these steps to use the application effectively:
-    
-    1. **Load Data:** Upload LAS or CSV files containing well log data using the `Load File` button.
-    2. **View & Clean Logs:** Fix missing values and outliers through `Show Input Logs` and `Fix Logs`.
-    3. **Select Training Data:** Choose the target log and input logs for model trainin.
-    4. **Visualize & Analyze Data:** using histograms and correlation matrices.
-    5. **Train Machine Learning Models:** Select ML models, tune hyperparameters, train and evaluate their performance.
-    6. **Use Trained Models & Predict New Data:** Load new well logs and make predictions using the trained models.
-
-    Navigate through the menu on the left to access different functionalities.
-    """)
-
 
 # Load LAS or CSV files
 def load_file():
