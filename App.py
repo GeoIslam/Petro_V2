@@ -22,7 +22,7 @@ import joblib
 from sklearn.tree import plot_tree
 
 # Streamlit page configuration
-st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
+st.set_page_config(page_title="🤖 Petrophysics Expert Robot", layout="wide")
 st.title("🤖 Petrophysics Expert Robot")
 
 # Initialize session state for menu selection
