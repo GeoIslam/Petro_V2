@@ -23,28 +23,28 @@ from sklearn.tree import plot_tree
 
 # Streamlit page configuration
 st.set_page_config(page_title="Petrophysics Expert Robot", layout="wide")
-st.title("📊 Petrophysics Expert Robot")
+st.title("🤖 Petrophysics Expert Robot")
 
 # Initialize session state for menu selection
 if "menu_choice" not in st.session_state:
     st.session_state.menu_choice = "Load File"  # Default selection
 # Sidebar Buttons
-st.sidebar.title("Menu")
-if st.sidebar.button("Load File"):
+st.sidebar.title("🏠 Menu")
+if st.sidebar.button("⬇️ Load File"):
     st.session_state.menu_choice = "Load File"
-if st.sidebar.button("Show Input Logs"):
+if st.sidebar.button("📺 Show Input Logs"):
     st.session_state.menu_choice = "Show Input Logs"
-if st.sidebar.button("Fix Logs"):
+if st.sidebar.button("🛠️ Fix Logs"):
     st.session_state.menu_choice = "Fix Logs"
-if st.sidebar.button("Select Training Data"):
+if st.sidebar.button("🎯 Select Training Data"):
     st.session_state.menu_choice = "Select Training Data"
-if st.sidebar.button("Plot Histograms"):
+if st.sidebar.button("📊 Plot Histograms"):
     st.session_state.menu_choice = "Plot Histograms"
-if st.sidebar.button("Plot Correlation Matrix"):
+if st.sidebar.button("📈 Plot Correlation Matrix"):
     st.session_state.menu_choice = "Plot Correlation Matrix"
-if st.sidebar.button("Train Models and Show Predictions"):
+if st.sidebar.button("֎🇦🇮 Train Models and Show Predictions"):
     st.session_state.menu_choice = "Train Models and Show Predictions"
-if st.sidebar.button("Load & Predict New Data"):
+if st.sidebar.button("⌛ Load & Predict New Data"):
     st.session_state.menu_choice = "Load & Predict New Data"
     
 # Initialize session state for global variables
