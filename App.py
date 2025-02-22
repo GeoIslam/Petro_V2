@@ -142,7 +142,7 @@ def show_input_logs():
                         x=[min_val]*len(df.index), 
                         y=df.index,
                         mode='lines',
-                        line=dict(color='rgba(128, 128, 128, 0.3)', width=0),  # Transparent line
+                        line=dict(color='red', width=0),  # Transparent line
                         showlegend=False,
                     ),
                     row=1, 
