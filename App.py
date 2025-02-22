@@ -310,7 +310,7 @@ def plot_correlation_matrix():
 
         st.session_state["updated_X"] = combined_df[input_logs].drop(columns=high_corr)
 
-        fig, axes = plt.subplots(nrows=1, ncols=len(st.session_state["updated_X"].columns), figsize=(10, 5))
+        fig, axes = plt.subplots(nrows=1, ncols=len(st.session_state["updated_X"].columns), figsize=(10, 15))
         for i, col in enumerate(st.session_state["updated_X"].columns):
             axes[i].plot(st.session_state["updated_X"][col], st.session_state["updated_X"].index, label=col)
             axes[i].set_ylim(st.session_state["updated_X"].index.max(), st.session_state["updated_X"].index.min())
@@ -320,7 +320,7 @@ def plot_correlation_matrix():
         plt.tight_layout()
         st.pyplot(fig)
 
-        fig_corr, ax_corr = plt.subplots(figsize=(10, 8))
+        fig_corr, ax_corr = plt.subplots(figsize=(8, 6))
         sns.heatmap(corr_matrix, annot=True, ax=ax_corr, cmap="coolwarm")
         ax_corr.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
