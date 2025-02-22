@@ -42,7 +42,7 @@ if st.sidebar.button("📊 Plot Histograms"):
     st.session_state.menu_choice = "Plot Histograms"
 if st.sidebar.button("📈 Plot Correlation Matrix"):
     st.session_state.menu_choice = "Plot Correlation Matrix"
-if st.sidebar.button("💡 Train Models and Show Predictions"):
+if st.sidebar.button("</> Train Models and Show Predictions"):
     st.session_state.menu_choice = "Train Models and Show Predictions"
 if st.sidebar.button("⌛ Load & Predict New Data"):
     st.session_state.menu_choice = "Load & Predict New Data"
@@ -519,7 +519,7 @@ def load_and_predict_new_data():
         st.warning("No file selected!")
         
 # Main UI
-st.title("📜 Petrophysical Property Predictor")
+st.title("Petrophysical Property Predictor")
 
 # Execute the selected function
 if st.session_state.menu_choice == "Load File":
