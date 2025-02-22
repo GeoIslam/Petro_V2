@@ -25,7 +25,7 @@ from sklearn.tree import plot_tree
 st.set_page_config(page_title="🤖 Petrophysics Expert Robot", layout="wide")
 
 # Sidebar Menu
-st.sidebar.title("🤖 Petrophysics Expert Robot")
+st.sidebar.title("🤖 Petrophysics Robot")
 if st.sidebar.button("🏠 Home / Introduction"):
     st.session_state.menu_choice = "Home"
 if st.sidebar.button("⬇️ Load File"):
