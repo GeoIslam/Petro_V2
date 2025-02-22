@@ -25,7 +25,7 @@ from sklearn.tree import plot_tree
 st.set_page_config(page_title="🤖 Petrophysics Expert Robot", layout="wide")
 
 # Sidebar Menu
-st.sidebar.title("🏠 Menu")
+st.sidebar.title("🤖 Petrophysics Expert Robot")
 if st.sidebar.button("🏠 Home / Introduction"):
     st.session_state.menu_choice = "Home"
 if st.sidebar.button("⬇️ Load File"):
@@ -299,7 +299,7 @@ def plot_correlation_matrix():
     combined_df = pd.concat(st.session_state["cleaned_dfs"], axis=0)
     
     if input_logs:
-        st.write("### Selected Input Logs")
+        st.write("### Correlation Matrix and Selected Input Logs")
         corr_matrix = combined_df[input_logs].corr()
 
         high_corr = set()
